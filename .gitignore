@@ -2,3 +2,6 @@
 !.gitkeep
 node_modules
 vendor
+library/*
+public/css/*
+public/js/*
