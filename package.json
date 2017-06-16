@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "mithril": "^1.1.1",
+    "webpack": "^2.6.1"
+  },
+  "scripts": {
+    "build-js": "webpack src/index.js public/js/app.js --watch",
+    "build-css": "node-sass src/main.scss public/css/main.css -w"
+  }
+}
