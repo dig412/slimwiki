@@ -52,7 +52,7 @@ class ListTree extends AbstractPlugin
                     if(!is_array($leaf)) {
                         $leaf = [];
                     }
-                    $leaf[] = $step;
+                    $leaf[] = ["basename" => $step, "path" => $entry["path"]];
                 } else {
                     //we have a directory, so add a new entry to the Tree, and move the leaf pointer on to it
                     $leaf = &$leaf[$step];

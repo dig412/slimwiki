@@ -32,15 +32,15 @@ Wiki.Nav.vm = {
 			Wiki.Nav.vm.list = result;
 		});
 	},
-	handleClick: function(e) {
-		e.preventDefault();
-		var targetUrl = e.target.href;
-		var targetHost = e.target.hostname;
-		var parts = e.target.href.split(targetHost);
-		var relativeUrl = parts[1];
+	// handleClick: function(e) {
+	// 	e.preventDefault();
+	// 	var targetUrl = e.target.href;
+	// 	var targetHost = e.target.hostname;
+	// 	var parts = e.target.href.split(targetHost);
+	// 	var relativeUrl = parts[1];
 		
-		Wiki.Articles.vm.load(relativeUrl);
-	}
+	// 	Wiki.Articles.vm.load(relativeUrl);
+	// }
 };
 Wiki.Nav.View = {
 	oninit: function() {
@@ -74,7 +74,7 @@ Wiki.Nav.Tree = {
 		return m("ul" + id, keys.map(function(key) {
 			var value = tree[key];
 
-			if(typeof value === "object") {
+			if(!value.path) {
 				var state = vnode.state.subfolders[key] || "close"
 				var stateClass = (state === "open") ? "open" : "";
 				return m("li.directory." + stateClass, [
@@ -91,7 +91,7 @@ Wiki.Nav.Tree = {
 					m(Wiki.Nav.Tree, {tree: value, level: ++level})
 				]);
 			} else {
-				return m("li", m("a", {href: "#"}, value));
+				return m("li", m("a", {href: value.path, onclick: Wiki.Articles.vm.handleClick.bind(Wiki.Articles.vm, null)}, value.basename));
 			}
 		}));
 	}
@@ -172,6 +172,9 @@ Wiki.Articles.vm = {
 	        if (e.target.nodeName == "A") {
 	            var relativeHref = e.target.href.split(e.target.hostname + "/")[1];
 	            Wiki.Articles.vm.load(relativeHref, article);
+	            e.preventDefault();
+	        } else {
+	        	console.log("NOEP");
 	            e.preventDefault();
 	        }
 	    }
