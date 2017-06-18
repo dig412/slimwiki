@@ -31,16 +31,7 @@ Wiki.Nav.vm = {
 			console.log(result);
 			Wiki.Nav.vm.list = result;
 		});
-	},
-	// handleClick: function(e) {
-	// 	e.preventDefault();
-	// 	var targetUrl = e.target.href;
-	// 	var targetHost = e.target.hostname;
-	// 	var parts = e.target.href.split(targetHost);
-	// 	var relativeUrl = parts[1];
-		
-	// 	Wiki.Articles.vm.load(relativeUrl);
-	// }
+	}
 };
 Wiki.Nav.View = {
 	oninit: function() {
@@ -54,9 +45,6 @@ Wiki.Nav.View = {
 				m("input#tree-filter-query.form-control.input-sm", {placeholder: "Search", type: "text"}),
 				m("a#tree-filter-clear-query.input-group-addon.input-sm", m("i.glyphicon.glyphicon-remove")),
 			]),
-			// m("ul#tree", Wiki.Nav.vm.list.map(function(entry) {
-			// 	return m("li.file", m("a", {href: entry.path, onclick: Wiki.Nav.vm.handleClick}, entry.path));
-			// }))
 			m(Wiki.Nav.Tree, {tree : Wiki.Nav.vm.list})
 		]);
 	}
@@ -194,10 +182,7 @@ Wiki.Articles.vm = {
 	        Wiki.Articles.vm.save(article);
 	    }
 
-	    Wiki.Articles.vm.load("live/a.md");
-	    Wiki.Articles.vm.load("live/b.md");
-	    Wiki.Articles.vm.load("live/c.md");
-	    Wiki.Articles.vm.load("live/new.md");
+	    Wiki.Articles.vm.load("index.md");
 	}
 }
 Wiki.Articles.View = {
