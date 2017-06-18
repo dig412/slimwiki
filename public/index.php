@@ -5,43 +5,41 @@ use League\Flysystem\Filesystem;
 use League\Flysystem\Adapter\Local;
 
 include __DIR__ . "/../vendor/autoload.php";
+include __DIR__ . "/../src/ListTree.php";
 
 $config = [
-    'settings' => [
-        'displayErrorDetails' => true,
-    ],
+	'settings' => [
+		'displayErrorDetails' => true,
+	],
 ];
 
 $app = new \Slim\App($config);
 
 $container = $app->getContainer();
 $container['filesystem'] = function ($container) {
-    $adapter    = new Local(__DIR__.'/../library');
-    $filesystem = new Filesystem($adapter);
-    return $filesystem;
+	$adapter    = new Local(__DIR__.'/../library');
+	$filesystem = new Filesystem($adapter);
+	$filesystem->addPlugin(new ListTree);
+	return $filesystem;
 };
 $container['markdown'] = function ($container) {
-    $markdown = new \Parsedown($adapter);
-    return $markdown;
+	$markdown = new \Parsedown($adapter);
+	return $markdown;
 };
 $container['view'] = new \Slim\Views\PhpRenderer(__DIR__ . "/../templates/");
 
 $app->get('/', function (Request $request, Response $response) {
-    $response = $this->view->render($response, "index.phtml");
-    return $response;
+	$response = $this->view->render($response, "index.phtml");
+	return $response;
 });
 
 $app->get('/tree', function (Request $request, Response $response) {
 	$filesystem = $this->get('filesystem');
-	$files = $filesystem->listContents(".", true);
+	$files = $filesystem->listTree(".");
 
-	$files = array_filter($files, function($entry) {
-		return $entry["type"] == "file";
-	});
+	$response = $response->withJson($files);
 
-    $response = $response->withJson(array_values($files));
-
-    return $response;
+	return $response;
 });
 
 $app->get('/article/{article_path:.*}', function (Request $request, Response $response) {
@@ -59,9 +57,9 @@ $app->get('/article/{article_path:.*}', function (Request $request, Response $re
 		"path" => $path
 	];
 
-    $response = $response->withJson($results);
+	$response = $response->withJson($results);
 
-    return $response;
+	return $response;
 });
 
 $app->post('/article', function (Request $request, Response $response) {
@@ -75,9 +73,9 @@ $app->post('/article', function (Request $request, Response $response) {
 		"success" => ($result !== false)
 	];
 
-    $response = $response->withJson($results);
+	$response = $response->withJson($results);
 
-    return $response;
+	return $response;
 });
 
 $app->run();
