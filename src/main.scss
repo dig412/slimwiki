@@ -103,18 +103,6 @@ a, a:focus {
     display: block;
     text-decoration: none;
 }
-.btn-black {
-    padding: 4px 8px;
-    margin: 2px 0;
-    font-size: 85%;
-    background: #555;
-    color: #eee;
-    border-radius: 3px;
-}
-.btn-black:hover {
-    background: #333;
-    color: #eee;
-}
 .directory-path {
     color: #7B848C;
     font-weight: normal;
@@ -141,7 +129,6 @@ a, a:focus {
     color: #333;
 }
 
-
 .article {
     padding: 28px 42px 42px 42px;
     border-radius: 2px;
@@ -160,15 +147,17 @@ a, a:focus {
     margin-top: -40px;
 }
 
-.article-controls button {
-    font-size: 22px;
-    color: #6879A5;
-    margin: 4px;
-}
-.article-controls button:hover {
-    font-size: 22px;
-    color: #8899C5;
-    margin: 4px;
+.article-controls {
+
+    button {
+      font-size: 22px;
+      color: #6879A5;
+      margin: 4px;  
+    }
+
+    button:hover {
+        color: #8899C5;
+    }
 }
 
 .btn-invisible {

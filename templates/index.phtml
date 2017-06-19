@@ -3,70 +3,27 @@
 <head>
 	<title>Slim Wiki</title>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="css/main.css" />
+	<link rel="stylesheet" type="text/css" href="css/main.css" />
 	<link rel="stylesheet" type="text/css" href="css/simplemde.min.css" />
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body>
+	<body>
+		<div id="main">
+			<div class="inner">
+				<div class="container-fluid">
+					<div class="row">
+						<div class="col-xs-12 col-md-3">
+							<div id="sidebar"></div>
+						</div>
+						<div class="col-xs-12 col-md-9" id="container"></div>
+					</div>
+				</div>
+			</div>
+		</div>
 
-<div id="main">
-                <div class="inner">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-xs-12 col-md-3">
-                        <div id="sidebar">
-                            <div class="inner">
-                                <h2><span>Wikitten</span></h2>
-                                
-<div id="tree-filter" class="input-group">
-    <input id="tree-filter-query" placeholder="Search file &amp; directory names." class="form-control input-sm" type="text">
-    <a id="tree-filter-clear-query" title="Clear current search..." class="input-group-addon input-sm">
-        <i class="glyphicon glyphicon-remove"></i>
-    </a>
-</div>
-<ul class="unstyled" id="tree-filter-results"></ul>
-
-
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xs-12 col-md-9" id="container">
-                        <div id="content">
-                            <div class="inner">
-                                <div class="breadcrumbs">    
-    <div class="pull-right">
-                    <a href="javascript:;" class="btn-black" id="toggle">Toggle source</a>
-                    </div>    
-
-        <ul class="breadcrumb">
-        <li>
-            <a href="https://wikitten.vizuina.com"><i class="glyphicon glyphicon-home glyphicon-white"></i> /wiki</a>
-        </li>
-        
-                                            <li>
-                <a href="https://wikitten.vizuina.com/index.md">
-                                            <i class="glyphicon glyphicon-file glyphicon-white"></i>
-                                        index.md                </a>
-            </li>
-            </ul>
-</div>
-<form action="article" method="post">
-<input type="text" name="article_path" value="2.md" />
-<textarea name="source">
-</textarea>
-<input type="submit" />
-</form>
-
-        
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-<script type="text/javascript" src="js/app.js"></script>
-<script type="text/javascript" src="js/simplemde.min.js"></script>
-</body>
+		<script type="text/javascript" src="js/app.js"></script>
+		<script type="text/javascript" src="js/simplemde.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+	</body>
 </html>

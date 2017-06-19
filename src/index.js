@@ -7,14 +7,14 @@ Wiki.Article = function(id, data) {
 	this.editing = false;
 	if(typeof data !== 'undefined') {
 		this.path = data.path;
-		this.html = data.html
+		this.html = data.html;
 		this.source = data.source;
 	} else {
 		this.path = "";
 		this.html = "";
 		this.source = "";
 	}
-}
+};
 
 Wiki.Nav = {};
 Wiki.Nav.vm = {
@@ -28,11 +28,11 @@ Wiki.Nav.vm = {
 			url: "tree",
 		})
 		.then(function(result) {
-			console.log(result);
 			Wiki.Nav.vm.list = result;
 		});
 	}
 };
+
 Wiki.Nav.View = {
 	oninit: function() {
 		Wiki.Nav.vm.init();
@@ -40,7 +40,7 @@ Wiki.Nav.View = {
 	view: function() {
 		return m("div.inner", [
 			m("h2", m("span", "slimWiki")),
-			m("button.btn.btn-black", {onclick: function(){Wiki.Articles.vm.creating = true}}, "New"),
+			m("button.btn.btn-black", {onclick: function(){Wiki.Articles.vm.creating = true;}}, "New"),
 			m("div#tree-filter.input-group", [
 				m("input#tree-filter-query.form-control.input-sm", {placeholder: "Search", type: "text"}),
 				m("a#tree-filter-clear-query.input-group-addon.input-sm", m("i.glyphicon.glyphicon-remove")),
@@ -49,13 +49,14 @@ Wiki.Nav.View = {
 		]);
 	}
 };
+
 Wiki.Nav.Tree = {
 	view: function(vnode) {
 
 		var tree = vnode.attrs.tree;
 		var level = vnode.attrs.level || 0;
 		var keys = Object.keys(tree);
-		var id = (level == 0) ? "#tree" : "";
+		var id = (level === 0) ? "#tree" : "";
 
 		vnode.state.subfolders = vnode.state.subfolders || {};
 
@@ -63,7 +64,7 @@ Wiki.Nav.Tree = {
 			var value = tree[key];
 
 			if(!value.path) {
-				var state = vnode.state.subfolders[key] || "close"
+				var state = vnode.state.subfolders[key] || "close";
 				var stateClass = (state === "open") ? "open" : "";
 				return m("li.directory." + stateClass, [
 					m("a", {"data-role": "directory", href: "#", onclick: function() {
@@ -89,102 +90,104 @@ Wiki.Articles.vm = {
 	creating: false,
 	created: {},
 	init: function() {
-	    Wiki.Articles.vm.list = new Array;
-	    Wiki.Articles.vm.id = 0;
+		Wiki.Articles.vm.list = [];
+		Wiki.Articles.vm.id = 0;
 
-	    Wiki.Articles.vm.load = function(articleId, addAfter) {
-	        return m.request({
-	            method: "GET",
-	            url: "article/" + articleId
-	        }).then(function(result) {
-	            Wiki.Articles.vm.add(result, addAfter);
-	        });
-	    }
-	    Wiki.Articles.vm.save = function(article) {
-	        var formData = new FormData();
-	        formData.append("article_path", article.path);
-	        formData.append("source", article.source);
-	        return m.request({
-	            method: "POST",
-	            url: "article",
-	            data: formData,
-	        }).then(function(response) {
-	        	if(!response.success) {
-	        		alert(response.message);
-	        	}
-	        }).catch(function(e) {
-	            alert(e.message);
-	        });
-	    }
-	    Wiki.Articles.vm.add = function(data, addAfterArticle) {
-	        Wiki.Articles.vm.id++;
+		Wiki.Articles.vm.load = function(articleId, addAfter) {
+			return m.request({
+				method: "GET",
+				url: "article/" + articleId
+			}).then(function(result) {
+				Wiki.Articles.vm.add(result, addAfter);
+			});
+		};
+		Wiki.Articles.vm.save = function(article) {
+			var formData = new FormData();
+			formData.append("article_path", article.path);
+			formData.append("source", article.source);
+			return m.request({
+				method: "POST",
+				url: "article",
+				data: formData,
+			}).then(function(response) {
+				if(!response.success) {
+					alert(response.message);
+				}
+			}).catch(function(e) {
+				alert(e.message);
+			});
+		};
+		Wiki.Articles.vm.add = function(data, addAfterArticle) {
+			Wiki.Articles.vm.id++;
 
-	        if (typeof addAfterArticle == 'undefined' || addAfterArticle == null) {
-	            Wiki.Articles.vm.list.push(new Wiki.Article(Wiki.Articles.vm.id, data));
-	        } else {
-	            var afterIndex = Wiki.Articles.vm.list.indexOf(addAfterArticle);
-	            Wiki.Articles.vm.list.splice(afterIndex, 0, new Wiki.Article(Wiki.Articles.vm.id, data));
-	        }
-	    }
-	    Wiki.Articles.vm.remove = function(article) {
-	        var id = Wiki.Articles.vm.list.indexOf(article);
-	        Wiki.Articles.vm.list.splice(id, 1);
-	    }
-	    Wiki.Articles.vm.up = function(article) {
-	        var id = Wiki.Articles.vm.list.indexOf(article);
-	        var newId = id+1;
+			if (typeof addAfterArticle == 'undefined' || addAfterArticle === null) {
+				Wiki.Articles.vm.list.push(new Wiki.Article(Wiki.Articles.vm.id, data));
+			} else {
+				var afterIndex = Wiki.Articles.vm.list.indexOf(addAfterArticle);
+				Wiki.Articles.vm.list.splice(afterIndex, 0, new Wiki.Article(Wiki.Articles.vm.id, data));
+			}
+		};
+		Wiki.Articles.vm.remove = function(article) {
+			var id = Wiki.Articles.vm.list.indexOf(article);
+			Wiki.Articles.vm.list.splice(id, 1);
+		};
+		Wiki.Articles.vm.up = function(article) {
+			var id = Wiki.Articles.vm.list.indexOf(article);
+			var newId = id+1;
 
-	        //Already at the top
-	        if(newId >= Wiki.Articles.vm.list.length) {
-	            return;
-	        }
+			//Already at the top
+			if(newId >= Wiki.Articles.vm.list.length) {
+				return;
+			}
 
-	        var temp = Wiki.Articles.vm.list[newId];
-	        Wiki.Articles.vm.list[newId] = Wiki.Articles.vm.list[id];
-	        Wiki.Articles.vm.list[id] = temp;
-	    }
-	    Wiki.Articles.vm.down = function(article) {
-	        var id = Wiki.Articles.vm.list.indexOf(article);
-	        var newId = id-1;
+			var temp = Wiki.Articles.vm.list[newId];
+			Wiki.Articles.vm.list[newId] = Wiki.Articles.vm.list[id];
+			Wiki.Articles.vm.list[id] = temp;
+		};
+		Wiki.Articles.vm.down = function(article) {
+			var id = Wiki.Articles.vm.list.indexOf(article);
+			var newId = id-1;
 
-	        //Already at the bottom
-	        if(newId < 0) {
-	            return;
-	        }
+			//Already at the bottom
+			if(newId < 0) {
+				return;
+			}
 
-	        var temp = Wiki.Articles.vm.list[newId];
-	        Wiki.Articles.vm.list[newId] = Wiki.Articles.vm.list[id];
-	        Wiki.Articles.vm.list[id] = temp;
-	    }
-	    Wiki.Articles.vm.handleClick = function(article, e) {
-	        if (e.target.nodeName == "A") {
-	            var relativeHref = e.target.href.split(e.target.hostname + "/")[1];
-	            Wiki.Articles.vm.load(relativeHref, article);
-	            e.preventDefault();
-	        } else {
-	        	console.log("NOEP");
-	            e.preventDefault();
-	        }
-	    }
-	    Wiki.Articles.vm.edit = function(item) {
-	        item.editing = true;
-	    }
-	    Wiki.Articles.vm.done = function(item) {
-	        item.editing = false;
-	        Wiki.Articles.vm.creating = false;
-	    }
-	    Wiki.Articles.vm.cleanup = function(article, vnode) {
-	        var editor = vnode.dom.editor;
-	        article.source = editor.value();
-	        article.html = editor.markdown(editor.value());
-	        editor.toTextArea();
-	        m.redraw();
-	        Wiki.Articles.vm.save(article);
-	    }
+			var temp = Wiki.Articles.vm.list[newId];
+			Wiki.Articles.vm.list[newId] = Wiki.Articles.vm.list[id];
+			Wiki.Articles.vm.list[id] = temp;
+		};
+		Wiki.Articles.vm.handleClick = function(article, e) {
 
-	    Wiki.Articles.vm.load("index.md");
+			if (e.target.nodeName == "A") {
+				//If it's a link to this site then intercept it and try and load the relevant article
+				if(window.location.hostname == e.target.hostname) {
+					var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname)[1];
+					Wiki.Articles.vm.load(relativeHref, article);
+					e.preventDefault();
+				}
+			}
+		};
+		Wiki.Articles.vm.edit = function(item) {
+			item.editing = true;
+		};
+		Wiki.Articles.vm.done = function(item) {
+			item.editing = false;
+			Wiki.Articles.vm.creating = false;
+		};
+		Wiki.Articles.vm.cleanup = function(article, vnode) {
+			var editor = vnode.dom.editor;
+			article.source = editor.value();
+			article.html = editor.markdown(editor.value());
+			editor.toTextArea();
+			m.redraw();
+			Wiki.Articles.vm.save(article);
+		};
+
+		Wiki.Articles.vm.load("index.md");
 	}
-}
+};
+
 Wiki.Articles.View = {
 	oninit: function() {
 		Wiki.Articles.vm.init();
@@ -197,7 +200,7 @@ Wiki.Articles.View = {
 		}
 
 		for (var id = Wiki.Articles.vm.list.length - 1; id >= 0; id--) {
-			var article = Wiki.Articles.vm.list[id]
+			var article = Wiki.Articles.vm.list[id];
 			articles.push(m(Wiki.ArticleView, {article: article, key: article.id}));
 		}
 
@@ -205,7 +208,7 @@ Wiki.Articles.View = {
 			m("div", articles)
 		]);
 	}
-}
+};
 
 Wiki.ArticleView = {
 	oninit: function(vnode) {
@@ -218,30 +221,30 @@ Wiki.ArticleView = {
 			setTimeout(function() {
 				vnode.dom.classList.remove("zoomIn");
 			}, 500);
-		})
+		});
 	},
 	//Try to animate sliding in the list
 	onupdate: function(vnode) {
-		const oldPos = vnode.state.oldPos;
-		const newPos = vnode.dom.getBoundingClientRect();
-		const deltaX = oldPos.left - newPos.left; 
-		const deltaY = oldPos.top  - newPos.top;
+		var oldPos = vnode.state.oldPos;
+		var newPos = vnode.dom.getBoundingClientRect();
+		var deltaX = oldPos.left - newPos.left; 
+		var deltaY = oldPos.top  - newPos.top;
 		requestAnimationFrame( function() {
-		      vnode.dom.style.transform  = `translate(${deltaX}px, ${deltaY}px)`;
-		      vnode.dom.style.transition = 'transform 0s';  
-		      
-		      requestAnimationFrame( function() {
-		        vnode.dom.style.transform  = '';
-		        vnode.dom.style.transition = 'transform 500ms';
-		      });
+			vnode.dom.style.transform  = 'translate('+deltaX+'px, '+deltaY+'px)';
+			vnode.dom.style.transition = 'transform 0s';  
+
+			requestAnimationFrame( function() {
+				vnode.dom.style.transform  = '';
+				vnode.dom.style.transition = 'transform 500ms';
+			});
 		});
 	},
 	//Animate on element removal:
 	onbeforeremove: function(vnode) {
 		vnode.dom.classList.add("zoomOut");
 		return new Promise(function(resolve) {
-			setTimeout(resolve, 350)
-		})
+			setTimeout(resolve, 350);
+		});
 	},
 	onbeforeupdate: function(vnode, old) {
 		//Stash the old position of the element so we can
@@ -251,8 +254,6 @@ Wiki.ArticleView = {
 	},
 	view: function(vnode) {
 		var article = vnode.state.article;
-
-		if(article.editing) {console.log(article);}
 
 		return m("div.article", [
 			m("div.article-controls.clearfix", [
@@ -268,12 +269,15 @@ Wiki.ArticleView = {
 			article.editing ? m("form", [
 				m("div.form-group", [
 					m("label", "Article name"),
-					m("input.form-control", { oninput: m.withAttr("value", function(value){article.path = value}), value: article.path}),
+					m("input.form-control", { oninput: m.withAttr("value", function(value){article.path = value;}), value: article.path}),
 				]),
 				m("div.form-group", [
 					m("label", "Article contents"),
 					m("textarea", {
-						oncreate: function(vnode) { vnode.dom.editor = new SimpleMDE({ element: vnode.dom}); },
+						oncreate: function(vnode) { vnode.dom.editor = new SimpleMDE({
+							element: vnode.dom,
+							toolbar: ["bold", "italic", "heading", "|", "code", "quote", "unordered-list", "table", "horizontal-rule", "|", "link", "image", "|", "preview", "guide"],
+						});},
 						onremove: Wiki.Articles.vm.cleanup.bind(Wiki.Articles.vm, article),
 					}, article.source)
 				])
