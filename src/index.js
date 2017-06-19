@@ -112,6 +112,8 @@ Wiki.Articles.vm = {
 			}).then(function(response) {
 				if(!response.success) {
 					alert(response.message);
+				} else {
+					Wiki.Nav.vm.load();
 				}
 			}).catch(function(e) {
 				alert(e.message);
