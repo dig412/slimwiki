@@ -1242,6 +1242,8 @@ Wiki.Article = function(id, data) {
 Wiki.Nav = {};
 Wiki.Nav.vm = {
 	list: [],
+	results: [],
+	query: "",
 	init: function() {
 		this.load();
 	},
@@ -1253,6 +1255,20 @@ Wiki.Nav.vm = {
 		.then(function(result) {
 			Wiki.Nav.vm.list = result;
 		});
+	},
+	search: function(query) {
+		Wiki.Nav.vm.query = query;
+		return m.request({
+			method: "GET",
+			url: "search/"+query,
+		})
+		.then(function(result) {
+			Wiki.Nav.vm.results = result;
+		});
+	},
+	clearResults: function() {
+		Wiki.Nav.vm.results = [];
+		Wiki.Nav.vm.query = "";
 	}
 };
 Wiki.Nav.View = {
@@ -1260,15 +1276,24 @@ Wiki.Nav.View = {
 		Wiki.Nav.vm.init();
 	},
 	view: function() {
-		return m("div.inner", [
-			m("h2", m("span", "slimWiki")),
-			m("button.btn.btn-black", {onclick: function(){Wiki.Articles.vm.creating = true;}}, "New"),
+		return m("div.sidebar", [
+			m("h2", "Ents24 Systems Docs"),
+			m("div.form-group", m("button.btn.btn-default", {onclick: function(){Wiki.Articles.vm.creating = true;}}, "New")),
 			m("div#tree-filter.input-group", [
-				m("input#tree-filter-query.form-control.input-sm", {placeholder: "Search", type: "text"}),
-				m("a#tree-filter-clear-query.input-group-addon.input-sm", m("i.glyphicon.glyphicon-remove")),
+				m("input#tree-filter-query.form-control.input-sm", {placeholder: "Search", type: "text", oninput: m.withAttr("value", Wiki.Nav.vm.search), value: Wiki.Nav.vm.query}),
+				m("a#tree-filter-clear-query.input-group-addon.input-sm", {onclick:  Wiki.Nav.vm.clearResults}, m("i.glyphicon.glyphicon-remove")),
 			]),
+			Wiki.Nav.vm.results.length > 0 ? m(Wiki.Nav.Results, {results: Wiki.Nav.vm.results}): null,
 			m(Wiki.Nav.Tree, {tree : Wiki.Nav.vm.list})
 		]);
+	}
+};
+Wiki.Nav.Results = {
+	view: function(vnode) {
+		var results = vnode.attrs.results;
+		return m("ul.search-results", results.map(function(result) {
+			return m("li", m("a", {href: result, onclick: Wiki.Articles.vm.handleClick.bind(Wiki.Articles.vm, null)}, result));
+		}));
 	}
 };
 Wiki.Nav.Tree = {
@@ -1297,7 +1322,7 @@ Wiki.Nav.Tree = {
 					m(Wiki.Nav.Tree, {tree: value, level: ++level})
 				]);
 			} else {
-				return m("li", m("a", {href: value.path, onclick: Wiki.Articles.vm.handleClick.bind(Wiki.Articles.vm, null)}, value.basename));
+				return m("li.file", m("a", {href: value.path, onclick: Wiki.Articles.vm.handleClick.bind(Wiki.Articles.vm, null)}, value.basename));
 			}
 		}));
 	}
@@ -1305,7 +1330,6 @@ Wiki.Nav.Tree = {
 Wiki.Articles = {};
 Wiki.Articles.vm = {
 	creating: false,
-	created: {},
 	init: function() {
 		Wiki.Articles.vm.list = [];
 		Wiki.Articles.vm.id = 0;
@@ -1329,6 +1353,10 @@ Wiki.Articles.vm = {
 				if(!response.success) {
 					alert(response.message);
 				} else {
+					if(article.new) {
+						Wiki.Articles.vm.load(article.path);
+						article.new = false;
+					}
 					Wiki.Nav.vm.load();
 				}
 			}).catch(function(e) {
@@ -1348,7 +1376,7 @@ Wiki.Articles.vm = {
 			var id = Wiki.Articles.vm.list.indexOf(article);
 			Wiki.Articles.vm.list.splice(id, 1);
 		};
-		Wiki.Articles.vm.up = function(article) {
+		Wiki.Articles.vm.up = function(article, vnode) {
 			var id = Wiki.Articles.vm.list.indexOf(article);
 			var newId = id+1;
 			//Already at the top
@@ -1358,8 +1386,11 @@ Wiki.Articles.vm = {
 			var temp = Wiki.Articles.vm.list[newId];
 			Wiki.Articles.vm.list[newId] = Wiki.Articles.vm.list[id];
 			Wiki.Articles.vm.list[id] = temp;
+			//Mark these articles as sliding, so we can apply list move animations to them
+			article.sliding = true;
+			temp.sliding = true;
 		};
-		Wiki.Articles.vm.down = function(article) {
+		Wiki.Articles.vm.down = function(article, vnode) {
 			var id = Wiki.Articles.vm.list.indexOf(article);
 			var newId = id-1;
 			//Already at the bottom
@@ -1369,6 +1400,9 @@ Wiki.Articles.vm = {
 			var temp = Wiki.Articles.vm.list[newId];
 			Wiki.Articles.vm.list[newId] = Wiki.Articles.vm.list[id];
 			Wiki.Articles.vm.list[id] = temp;
+			//Mark these articles as sliding, so we can apply list move animations to them
+			article.sliding = true;
+			temp.sliding = true;
 		};
 		Wiki.Articles.vm.handleClick = function(article, e) {
 			if (e.target.nodeName == "A") {
@@ -1411,9 +1445,7 @@ Wiki.Articles.View = {
 			var article = Wiki.Articles.vm.list[id];
 			articles.push(m(Wiki.ArticleView, {article: article, key: article.id}));
 		}
-		return m("div.inner", [
-			m("div", articles)
-		]);
+		return m("div", articles);
 	}
 };
 Wiki.ArticleView = {
@@ -1430,29 +1462,35 @@ Wiki.ArticleView = {
 	},
 	//Try to animate sliding in the list
 	onupdate: function(vnode) {
-		var oldPos = vnode.state.oldPos;
-		var newPos = vnode.dom.getBoundingClientRect();
-		var deltaX = oldPos.left - newPos.left; 
-		var deltaY = oldPos.top  - newPos.top;
-		requestAnimationFrame( function() {
-			vnode.dom.style.transform  = 'translate('+deltaX+'px, '+deltaY+'px)';
-			vnode.dom.style.transition = 'transform 0s';  
+		//Only try and animate vnodes we know are meant to be sliding, otherwise things end up with translate() styles
+		//any time they are updated
+		if(vnode.state.article.sliding) {
+			var oldPos = vnode.state.oldPos;
+			var newPos = vnode.dom.getBoundingClientRect();
+			var deltaX = oldPos.left - newPos.left; 
+			var deltaY = oldPos.top  - newPos.top;
 			requestAnimationFrame( function() {
-				vnode.dom.style.transform  = '';
-				vnode.dom.style.transition = 'transform 500ms';
+				vnode.dom.style.transform  = 'translate('+deltaX+'px, '+deltaY+'px)';
+				vnode.dom.style.transition = 'transform 0s';  
+				requestAnimationFrame( function() {
+					vnode.dom.style.transform  = '';
+					vnode.dom.style.transition = 'transform 500ms';
+					vnode.state.article.sliding = false;
+				});
 			});
-		});
+		}
 	},
 	//Animate on element removal:
 	onbeforeremove: function(vnode) {
 		vnode.dom.classList.add("zoomOut");
+		//Don't resolve (remove the element from the DOM) until the animation has had some time to run
 		return new Promise(function(resolve) {
 			setTimeout(resolve, 350);
 		});
 	},
 	onbeforeupdate: function(vnode, old) {
-		//Stash the old position of the element so we can
-		if(old.dom) {
+		//Stash the old position of the element so we can animate it when it moves
+		if(old.dom && vnode.state.article.sliding) {
 			vnode.state.oldPos = old.dom.getBoundingClientRect();
 		}
 	},
@@ -1462,8 +1500,8 @@ Wiki.ArticleView = {
 			m("div.article-controls.clearfix", [
 				m("div.pull-right", [
 					m("button.btn-invisible", {onclick: Wiki.Articles.vm.remove.bind(Wiki.Articles.vm, article)}, m("i.glyphicon.glyphicon-remove")),
-					m("button.btn-invisible", {onclick: Wiki.Articles.vm.up.bind(Wiki.Articles.vm, article)}, m("i.glyphicon.glyphicon-chevron-up")),
-					m("button.btn-invisible", {onclick: Wiki.Articles.vm.down.bind(Wiki.Articles.vm, article)}, m("i.glyphicon.glyphicon-chevron-down")),
+					m("button.btn-invisible", {onclick: Wiki.Articles.vm.up.bind(Wiki.Articles.vm, article, vnode)}, m("i.glyphicon.glyphicon-chevron-up")),
+					m("button.btn-invisible", {onclick: Wiki.Articles.vm.down.bind(Wiki.Articles.vm, article, vnode)}, m("i.glyphicon.glyphicon-chevron-down")),
 					!article.editing ? m("button.btn-invisible", {onclick: Wiki.Articles.vm.edit.bind(Wiki.Articles.vm, article)}, m("i.glyphicon.glyphicon-pencil")) : null,
 					article.editing ? m("button.btn-invisible", {onclick: Wiki.Articles.vm.done.bind(Wiki.Articles.vm, article)}, m("i.glyphicon.glyphicon-ok")) : null
 				])
@@ -1491,13 +1529,16 @@ Wiki.ArticleView = {
 Wiki.NewArticleView = {
 	oninit: function(vnode) {
 		vnode.state.article = new Wiki.Article(++Wiki.Articles.vm.id);
+		//Put the article in edit mode
 		vnode.state.article.editing = true;
+		//And mark it as new so we know to insert it into the stack after it saves
+		vnode.state.article.new     = true;
 	},
 	view: function(vnode) {
 		return m(Wiki.ArticleView, {article: vnode.state.article});
 	}
 };
-var nav = document.getElementById("sidebar");
+var nav = document.getElementById("sidebar2");
 m.mount(nav, Wiki.Nav.View);
 var articles = document.getElementById("container");
 m.mount(articles, Wiki.Articles.View);
