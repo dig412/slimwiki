@@ -79,4 +79,28 @@ $app->post('/article', function (Request $request, Response $response) {
 	return $response;
 });
 
+$app->get('/search/{query}', function (Request $request, Response $response) {
+	$filesystem = $this->get('filesystem');
+
+	$query = $request->getAttribute('query');
+	$contents = $this->filesystem->listContents(".", true);
+
+	$files = array_filter($contents, function($entry) {
+        return $entry["type"] == "file";
+    });
+
+    $results = [];
+
+    foreach($files as $file) {
+    	$document = $filesystem->read($file["path"]);
+    	if(stripos($document, $query) !== false) {
+    		$results[] = $file["path"];
+    	}
+    }
+
+	$response = $response->withJson($results);
+
+	return $response;
+});
+
 $app->run();
