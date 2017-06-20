@@ -6,6 +6,7 @@ use League\Flysystem\Adapter\Local;
 
 include __DIR__ . "/../vendor/autoload.php";
 include __DIR__ . "/../src/ListTree.php";
+include __DIR__ . "/../src/ParsedownLinkTarget.php";
 
 $config = [
 	'settings' => [
@@ -23,7 +24,7 @@ $container['filesystem'] = function ($container) {
 	return $filesystem;
 };
 $container['markdown'] = function ($container) {
-	$markdown = new \Parsedown($adapter);
+	$markdown = new \ParsedownLinkTarget($adapter);
 	return $markdown;
 };
 $container['view'] = new \Slim\Views\PhpRenderer(__DIR__ . "/../templates/");
