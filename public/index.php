@@ -103,4 +103,42 @@ $app->get('/search/{query}', function (Request $request, Response $response) {
 	return $response;
 });
 
+$app->post('/upload', function (Request $request, Response $response) {
+	$filesystem = $this->get('filesystem');
+
+	$files = $request->getUploadedFiles();
+
+	$success = true;
+	$message = "";
+
+	foreach($files as $file) {
+		$path = 'uploads/'.$file->getClientFilename();
+
+		if($filesystem->has($path)) {
+			$success = false;
+			$message = "File already exists at path $path";
+			break;
+		}
+
+		$stream = fopen($file->file, 'r');
+		$filesystem->writeStream($path, $stream);
+		fclose($stream);
+		$uploadedFiles[] = $path;
+	}
+
+	$results = [
+		"success" => $success,
+		"message" => $message
+	];
+
+	$response = $response->withJson($results);
+
+	if(!$success) {
+		$response = $response->withStatus(400);
+	}
+
+	return $response;
+});
+
+
 $app->run();

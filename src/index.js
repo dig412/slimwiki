@@ -21,6 +21,8 @@ Wiki.Nav.vm = {
 	list: [],
 	results: [],
 	query: "",
+	uploading: false,
+	error: "",
 	init: function() {
 		this.load();
 	},
@@ -46,6 +48,26 @@ Wiki.Nav.vm = {
 	clearResults: function() {
 		Wiki.Nav.vm.results = [];
 		Wiki.Nav.vm.query = "";
+	},
+	upload: function(e) {
+		Wiki.Nav.vm.error     = null;
+		Wiki.Nav.vm.uploading = true;
+		var file = e.target.files[0];
+
+		var data = new FormData();
+		data.append("file", file);
+
+		m.request({
+			method: "POST",
+			url: "upload",
+			data: data,
+		}).then(function(result) {
+			Wiki.Nav.vm.load();
+			Wiki.Nav.vm.uploading = false;			
+		}).catch(function(e) {
+			Wiki.Nav.vm.error = e.message;
+			Wiki.Nav.vm.uploading = false;			
+		});
 	}
 };
 
@@ -56,7 +78,15 @@ Wiki.Nav.View = {
 	view: function() {
 		return m("div.sidebar", [
 			m("h2", "Ents24 Systems Docs"),
-			m("div.form-group", m("button.btn.btn-default", {onclick: function(){Wiki.Articles.vm.creating = true;}}, "New")),
+			m("div.form-group", [
+				m("button.btn.btn-default", {onclick: function(){Wiki.Articles.vm.creating = true;}}, "New"),
+				m("label.btn.btn-default", [
+					Wiki.Nav.vm.uploading ? m("i.fa.fa-circle-o-notch.fa-spin") : null,
+					" Browse ",
+					m("input[type=file]", {onchange: Wiki.Nav.vm.upload, style:"display: none;"})
+				]),
+			]),
+			Wiki.Nav.vm.error ? Wiki.Nav.vm.error : null,
 			m("div#tree-filter.input-group", [
 				m("input#tree-filter-query.form-control.input-sm", {placeholder: "Search", type: "text", oninput: m.withAttr("value", Wiki.Nav.vm.search), value: Wiki.Nav.vm.query}),
 				m("a#tree-filter-clear-query.input-group-addon.input-sm", {onclick:  Wiki.Nav.vm.clearResults}, m("i.glyphicon.glyphicon-remove")),
@@ -199,9 +229,16 @@ Wiki.Articles.vm = {
 			if (e.target.nodeName == "A") {
 				//If it's a link to this site then intercept it and try and load the relevant article
 				if(window.location.hostname == e.target.hostname) {
-					var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname)[1];
-					Wiki.Articles.vm.load(relativeHref, article);
-					e.preventDefault();
+
+					var urlParts = e.target.href.split(".");
+					var extension = urlParts[urlParts.length-1];
+
+					if(extension == "md") {
+						var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname)[1];
+						Wiki.Articles.vm.load(relativeHref, article);
+						e.preventDefault();
+					}
+
 				}
 			}
 		};
@@ -317,6 +354,7 @@ Wiki.ArticleView = {
 					m("textarea", {
 						oncreate: function(vnode) { vnode.dom.editor = new SimpleMDE({
 							element: vnode.dom,
+							spellChecker: false,
 							toolbar: ["bold", "italic", "heading", "|", "code", "quote", "unordered-list", "table", "horizontal-rule", "|", "link", "image", "|", "preview", "guide"],
 						});},
 						onremove: Wiki.Articles.vm.cleanup.bind(Wiki.Articles.vm, article),

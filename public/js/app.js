@@ -316,9 +316,9 @@ var _8 = function($window, Promise) {
 		var promise0 = new Promise(function(resolve, reject) {
 			var callbackName = args.callbackName || "_mithril_" + Math.round(Math.random() * 1e16) + "_" + callbackCount++
 			var script = $window.document.createElement("script")
-			$window[callbackName] = function(data) {
+			$window[callbackName] = function(data0) {
 				script.parentNode.removeChild(script)
-				resolve(cast(args.type, data))
+				resolve(cast(args.type, data0))
 				delete $window[callbackName]
 			}
 			script.onerror = function() {
@@ -334,40 +334,40 @@ var _8 = function($window, Promise) {
 		})
 		return args.background === true? promise0 : finalize(promise0)
 	}
-	function interpolate(url, data) {
-		if (data == null) return url
+	function interpolate(url, data0) {
+		if (data0 == null) return url
 		var tokens = url.match(/:[^\/]+/gi) || []
 		for (var i = 0; i < tokens.length; i++) {
 			var key = tokens[i].slice(1)
-			if (data[key] != null) {
-				url = url.replace(tokens[i], data[key])
+			if (data0[key] != null) {
+				url = url.replace(tokens[i], data0[key])
 			}
 		}
 		return url
 	}
-	function assemble(url, data) {
-		var querystring = buildQueryString(data)
+	function assemble(url, data0) {
+		var querystring = buildQueryString(data0)
 		if (querystring !== "") {
 			var prefix = url.indexOf("?") < 0 ? "?" : "&"
 			url += prefix + querystring
 		}
 		return url
 	}
-	function deserialize(data) {
-		try {return data !== "" ? JSON.parse(data) : null}
-		catch (e) {throw new Error(data)}
+	function deserialize(data0) {
+		try {return data0 !== "" ? JSON.parse(data0) : null}
+		catch (e) {throw new Error(data0)}
 	}
 	function extract(xhr) {return xhr.responseText}
-	function cast(type0, data) {
+	function cast(type0, data0) {
 		if (typeof type0 === "function") {
-			if (Array.isArray(data)) {
-				for (var i = 0; i < data.length; i++) {
-					data[i] = new type0(data[i])
+			if (Array.isArray(data0)) {
+				for (var i = 0; i < data0.length; i++) {
+					data0[i] = new type0(data0[i])
 				}
 			}
-			else return new type0(data)
+			else return new type0(data0)
 		}
-		return data
+		return data0
 	}
 	return {request: request, jsonp: jsonp, setCompletionCallback: setCompletionCallback}
 }
@@ -1058,9 +1058,9 @@ var coreRouter = function($window) {
 	var supportsPushState = typeof $window.history.pushState === "function"
 	var callAsync0 = typeof setImmediate === "function" ? setImmediate : setTimeout
 	function normalize1(fragment0) {
-		var data = $window.location[fragment0].replace(/(?:%[a-f89][a-f0-9])+/gim, decodeURIComponent)
-		if (fragment0 === "pathname" && data[0] !== "/") data = "/" + data
-		return data
+		var data0 = $window.location[fragment0].replace(/(?:%[a-f89][a-f0-9])+/gim, decodeURIComponent)
+		if (fragment0 === "pathname" && data0[0] !== "/") data0 = "/" + data0
+		return data0
 	}
 	var asyncId
 	function debounceAsync(callback0) {
@@ -1096,14 +1096,14 @@ var coreRouter = function($window) {
 			default: return normalize1("pathname").slice(router.prefix.length) + normalize1("search") + normalize1("hash")
 		}
 	}
-	router.setPath = function(path, data, options) {
+	router.setPath = function(path, data0, options) {
 		var queryData = {}, hashData = {}
 		path = parsePath(path, queryData, hashData)
-		if (data != null) {
-			for (var key4 in data) queryData[key4] = data[key4]
+		if (data0 != null) {
+			for (var key4 in data0) queryData[key4] = data0[key4]
 			path = path.replace(/:([^\/]+)/g, function(match2, token) {
 				delete queryData[token]
-				return data[token]
+				return data0[token]
 			})
 		}
 		var query = buildQueryString(queryData)
@@ -1183,10 +1183,10 @@ var _20 = function($window, redrawService0) {
 		}, bail)
 		redrawService0.subscribe(root, run1)
 	}
-	route.set = function(path, data, options) {
+	route.set = function(path, data0, options) {
 		if (lastUpdate != null) options = {replace: true}
 		lastUpdate = null
-		routeService.setPath(path, data, options)
+		routeService.setPath(path, data0, options)
 	}
 	route.get = function() {return currentPath}
 	route.prefix = function(prefix0) {routeService.prefix = prefix0}
@@ -1244,6 +1244,8 @@ Wiki.Nav.vm = {
 	list: [],
 	results: [],
 	query: "",
+	uploading: false,
+	error: "",
 	init: function() {
 		this.load();
 	},
@@ -1269,6 +1271,24 @@ Wiki.Nav.vm = {
 	clearResults: function() {
 		Wiki.Nav.vm.results = [];
 		Wiki.Nav.vm.query = "";
+	},
+	upload: function(e) {
+		Wiki.Nav.vm.error     = null;
+		Wiki.Nav.vm.uploading = true;
+		var file = e.target.files[0];
+		var data = new FormData();
+		data.append("file", file);
+		m.request({
+			method: "POST",
+			url: "upload",
+			data: data,
+		}).then(function(result) {
+			Wiki.Nav.vm.load();
+			Wiki.Nav.vm.uploading = false;			
+		}).catch(function(e) {
+			Wiki.Nav.vm.error = e.message;
+			Wiki.Nav.vm.uploading = false;			
+		});
 	}
 };
 Wiki.Nav.View = {
@@ -1278,7 +1298,15 @@ Wiki.Nav.View = {
 	view: function() {
 		return m("div.sidebar", [
 			m("h2", "Ents24 Systems Docs"),
-			m("div.form-group", m("button.btn.btn-default", {onclick: function(){Wiki.Articles.vm.creating = true;}}, "New")),
+			m("div.form-group", [
+				m("button.btn.btn-default", {onclick: function(){Wiki.Articles.vm.creating = true;}}, "New"),
+				m("label.btn.btn-default", [
+					Wiki.Nav.vm.uploading ? m("i.fa.fa-circle-o-notch.fa-spin") : null,
+					" Browse ",
+					m("input[type=file]", {onchange: Wiki.Nav.vm.upload, style:"display: none;"})
+				]),
+			]),
+			Wiki.Nav.vm.error ? Wiki.Nav.vm.error : null,
 			m("div#tree-filter.input-group", [
 				m("input#tree-filter-query.form-control.input-sm", {placeholder: "Search", type: "text", oninput: m.withAttr("value", Wiki.Nav.vm.search), value: Wiki.Nav.vm.query}),
 				m("a#tree-filter-clear-query.input-group-addon.input-sm", {onclick:  Wiki.Nav.vm.clearResults}, m("i.glyphicon.glyphicon-remove")),
@@ -1408,9 +1436,13 @@ Wiki.Articles.vm = {
 			if (e.target.nodeName == "A") {
 				//If it's a link to this site then intercept it and try and load the relevant article
 				if(window.location.hostname == e.target.hostname) {
-					var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname)[1];
-					Wiki.Articles.vm.load(relativeHref, article);
-					e.preventDefault();
+					var urlParts = e.target.href.split(".");
+					var extension = urlParts[urlParts.length-1];
+					if(extension == "md") {
+						var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname)[1];
+						Wiki.Articles.vm.load(relativeHref, article);
+						e.preventDefault();
+					}
 				}
 			}
 		};
@@ -1517,6 +1549,7 @@ Wiki.ArticleView = {
 					m("textarea", {
 						oncreate: function(vnode) { vnode.dom.editor = new SimpleMDE({
 							element: vnode.dom,
+							spellChecker: false,
 							toolbar: ["bold", "italic", "heading", "|", "code", "quote", "unordered-list", "table", "horizontal-rule", "|", "link", "image", "|", "preview", "guide"],
 						});},
 						onremove: Wiki.Articles.vm.cleanup.bind(Wiki.Articles.vm, article),
