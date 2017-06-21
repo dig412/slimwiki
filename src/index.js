@@ -77,7 +77,7 @@ Wiki.Nav.View = {
 	},
 	view: function() {
 		return m("div.sidebar", [
-			m("h2", "Ents24 Systems Docs"),
+			m("h1", "Ents24 Systems Docs"),
 			m("div.form-group", [
 				m("button.btn.btn-default", {onclick: Wiki.Articles.vm.new}, "New"),
 				m("label.btn.btn-default", [
@@ -88,12 +88,12 @@ Wiki.Nav.View = {
 				]),
 			]),
 			Wiki.Nav.vm.error ? Wiki.Nav.vm.error : null,
-			m("div#tree-filter.input-group", [
-				m("input#tree-filter-query.form-control.input-sm", {placeholder: "Search", type: "text", oninput: m.withAttr("value", Wiki.Nav.vm.search), value: Wiki.Nav.vm.query}),
-				m("a#tree-filter-clear-query.input-group-addon.input-sm", {onclick:  Wiki.Nav.vm.clearResults}, m("i.fa.fa-times ")),
+			m("div.input-group", [
+				m("input.form-control.input-sm", {placeholder: "Search", type: "text", oninput: m.withAttr("value", Wiki.Nav.vm.search), value: Wiki.Nav.vm.query}),
+				m("a.input-group-addon.input-sm", {onclick:  Wiki.Nav.vm.clearResults}, m("i.fa.fa-times ")),
 			]),
 			Wiki.Nav.vm.results.length > 0 ? m(Wiki.Nav.Results, {results: Wiki.Nav.vm.results}): null,
-			m(Wiki.Nav.Tree, {tree : Wiki.Nav.vm.list})
+			m(Wiki.Nav.Tree, {tree : Wiki.Nav.vm.list}),
 		]);
 	}
 };
@@ -113,11 +113,10 @@ Wiki.Nav.Tree = {
 		var tree = vnode.attrs.tree;
 		var level = vnode.attrs.level || 0;
 		var keys = Object.keys(tree);
-		var id = (level === 0) ? "#tree" : "";
 
 		vnode.state.subfolders = vnode.state.subfolders || {};
 
-		return m("ul" + id, keys.map(function(key) {
+		return m("ul", keys.map(function(key) {
 			var value = tree[key];
 
 			if(!value.path) {
