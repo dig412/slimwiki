@@ -82,14 +82,15 @@ Wiki.Nav.View = {
 				m("button.btn.btn-default", {onclick: function(){Wiki.Articles.vm.creating = true;}}, "New"),
 				m("label.btn.btn-default", [
 					Wiki.Nav.vm.uploading ? m("i.fa.fa-circle-o-notch.fa-spin") : null,
-					" Browse ",
+					" Upload ",
+					m("i.fa.fa-upload"),
 					m("input[type=file]", {onchange: Wiki.Nav.vm.upload, style:"display: none;"})
 				]),
 			]),
 			Wiki.Nav.vm.error ? Wiki.Nav.vm.error : null,
 			m("div#tree-filter.input-group", [
 				m("input#tree-filter-query.form-control.input-sm", {placeholder: "Search", type: "text", oninput: m.withAttr("value", Wiki.Nav.vm.search), value: Wiki.Nav.vm.query}),
-				m("a#tree-filter-clear-query.input-group-addon.input-sm", {onclick:  Wiki.Nav.vm.clearResults}, m("i.glyphicon.glyphicon-remove")),
+				m("a#tree-filter-clear-query.input-group-addon.input-sm", {onclick:  Wiki.Nav.vm.clearResults}, m("i.fa.fa-times ")),
 			]),
 			Wiki.Nav.vm.results.length > 0 ? m(Wiki.Nav.Results, {results: Wiki.Nav.vm.results}): null,
 			m(Wiki.Nav.Tree, {tree : Wiki.Nav.vm.list})
@@ -130,7 +131,7 @@ Wiki.Nav.Tree = {
 							vnode.state.subfolders[key] = "open";
 						}
 					}}, [
-						m("i.glyphicon.glyphicon-folder-" + state),
+						m("i.fa.fa-folder" + (stateClass ? "-"+stateClass : "")),
 						" " + key
 					]),
 					m(Wiki.Nav.Tree, {tree: value, level: ++level})
@@ -336,11 +337,11 @@ Wiki.ArticleView = {
 		return m("div.article", [
 			m("div.article-controls.clearfix", [
 				m("div.pull-right", [
-					m("button.btn-invisible", {onclick: Wiki.Articles.vm.remove.bind(Wiki.Articles.vm, article)}, m("i.glyphicon.glyphicon-remove")),
-					m("button.btn-invisible", {onclick: Wiki.Articles.vm.up.bind(Wiki.Articles.vm, article, vnode)}, m("i.glyphicon.glyphicon-chevron-up")),
-					m("button.btn-invisible", {onclick: Wiki.Articles.vm.down.bind(Wiki.Articles.vm, article, vnode)}, m("i.glyphicon.glyphicon-chevron-down")),
-					!article.editing ? m("button.btn-invisible", {onclick: Wiki.Articles.vm.edit.bind(Wiki.Articles.vm, article)}, m("i.glyphicon.glyphicon-pencil")) : null,
-					article.editing ? m("button.btn-invisible", {onclick: Wiki.Articles.vm.done.bind(Wiki.Articles.vm, article)}, m("i.glyphicon.glyphicon-ok")) : null
+					m("button.btn-invisible", {onclick: Wiki.Articles.vm.remove.bind(Wiki.Articles.vm, article)}, m("i.fa.fa-times")),
+					m("button.btn-invisible", {onclick: Wiki.Articles.vm.up.bind(Wiki.Articles.vm, article, vnode)}, m("i.fa.fa-chevron-up")),
+					m("button.btn-invisible", {onclick: Wiki.Articles.vm.down.bind(Wiki.Articles.vm, article, vnode)}, m("i.fa.fa-chevron-down")),
+					!article.editing ? m("button.btn-invisible", {onclick: Wiki.Articles.vm.edit.bind(Wiki.Articles.vm, article)}, m("i.fa.fa-pencil")) : null,
+					article.editing ? m("button.btn-invisible", {onclick: Wiki.Articles.vm.done.bind(Wiki.Articles.vm, article)}, m("i.fa.fa-floppy-o")) : null
 				])
 			]),
 			!article.editing ? m("div.article-contents", { onclick: Wiki.Articles.vm.handleClick.bind(Wiki.Articles.vm, article) }, m.trust(article.html)) : null,
