@@ -17,8 +17,14 @@ $config = [
 $app = new \Slim\App($config);
 
 $container = $app->getContainer();
-$container['filesystem'] = function ($container) {
-	$adapter    = new Local(__DIR__.'/../library');
+$container['library'] = function ($container) {
+	$adapter = new Local(__DIR__.'/../library');
+	$filesystem = new Filesystem($adapter);
+	$filesystem->addPlugin(new ListTree);
+	return $filesystem;
+};
+$container['uploads'] = function ($container) {
+	$adapter  = new Local(__DIR__.'/../public/uploads');
 	$filesystem = new Filesystem($adapter);
 	$filesystem->addPlugin(new ListTree);
 	return $filesystem;
@@ -35,7 +41,7 @@ $app->get('/', function (Request $request, Response $response) {
 });
 
 $app->get('/tree', function (Request $request, Response $response) {
-	$filesystem = $this->get('filesystem');
+	$filesystem = $this->get('library');
 	$files = $filesystem->listTree(".");
 
 	$response = $response->withJson($files);
@@ -44,7 +50,7 @@ $app->get('/tree', function (Request $request, Response $response) {
 });
 
 $app->get('/article/{article_path:.*}', function (Request $request, Response $response) {
-	$filesystem = $this->get('filesystem');
+	$filesystem = $this->get('library');
 	$markdown = $this->get('markdown');
 
 	$path = $request->getAttribute('article_path');
@@ -76,7 +82,7 @@ $app->get('/article/{article_path:.*}', function (Request $request, Response $re
 });
 
 $app->post('/article', function (Request $request, Response $response) {
-	$filesystem = $this->get('filesystem');
+	$filesystem = $this->get('library');
 
 	$path = $request->getParam('article_path');
 	$source = $request->getParam('source');
@@ -92,10 +98,10 @@ $app->post('/article', function (Request $request, Response $response) {
 });
 
 $app->get('/search/{query}', function (Request $request, Response $response) {
-	$filesystem = $this->get('filesystem');
+	$filesystem = $this->get('library');
 
 	$query = $request->getAttribute('query');
-	$contents = $this->filesystem->listContents(".", true);
+	$contents = $filesystem->listContents(".", true);
 
 	$files = array_filter($contents, function($entry) {
         return $entry["type"] == "file";
@@ -116,7 +122,7 @@ $app->get('/search/{query}', function (Request $request, Response $response) {
 });
 
 $app->post('/upload', function (Request $request, Response $response) {
-	$filesystem = $this->get('filesystem');
+	$filesystem = $this->get('uploads');
 
 	$files = $request->getUploadedFiles();
 
@@ -124,7 +130,7 @@ $app->post('/upload', function (Request $request, Response $response) {
 	$message = "";
 
 	foreach($files as $file) {
-		$path = 'uploads/'.$file->getClientFilename();
+		$path = $file->getClientFilename();
 
 		if($filesystem->has($path)) {
 			$success = false;
@@ -151,6 +157,5 @@ $app->post('/upload', function (Request $request, Response $response) {
 
 	return $response;
 });
-
 
 $app->run();
