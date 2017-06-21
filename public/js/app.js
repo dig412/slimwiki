@@ -408,13 +408,13 @@ var coreRenderer = function($window) {
 	function createHTML(parent, vnode, nextSibling) {
 		var match1 = vnode.children.match(/^\s*?<(\w+)/im) || []
 		var parent1 = {caption: "table", thead: "table", tbody: "table", tfoot: "table", tr: "tbody", th: "tr", td: "tr", colgroup: "table", col: "colgroup"}[match1[1]] || "div"
-		var temp0 = $doc.createElement(parent1)
-		temp0.innerHTML = vnode.children
-		vnode.dom = temp0.firstChild
-		vnode.domSize = temp0.childNodes.length
+		var temp = $doc.createElement(parent1)
+		temp.innerHTML = vnode.children
+		vnode.dom = temp.firstChild
+		vnode.domSize = temp.childNodes.length
 		var fragment = $doc.createDocumentFragment()
 		var child
-		while (child = temp0.firstChild) {
+		while (child = temp.firstChild) {
 			fragment.appendChild(child)
 		}
 		insertNode(parent, fragment, nextSibling)
@@ -952,7 +952,7 @@ var coreRenderer = function($window) {
 		if (!dom) throw new Error("Ensure the DOM element being passed to m.route/m.mount/m.render is not undefined.")
 		var hooks = []
 		var active = $doc.activeElement
-		// First time0 rendering into a node clears it out
+		// First time0 rendering into a0 node clears it out
 		if (dom.vnodes == null) dom.textContent = ""
 		if (!Array.isArray(vnodes)) vnodes = [vnodes]
 		updateNodes(dom, dom.vnodes, Vnode.normalizeChildren(vnodes), false, hooks, null, undefined)
@@ -1058,7 +1058,7 @@ var coreRouter = function($window) {
 	var supportsPushState = typeof $window.history.pushState === "function"
 	var callAsync0 = typeof setImmediate === "function" ? setImmediate : setTimeout
 	function normalize1(fragment0) {
-		var data0 = $window.location[fragment0].replace(/(?:%[a-f89][a-f0-9])+/gim, decodeURIComponent)
+		var data0 = $window.location[fragment0].replace(/(?:%[a0-f89][a0-f0-9])+/gim, decodeURIComponent)
 		if (fragment0 === "pathname" && data0[0] !== "/") data0 = "/" + data0
 		return data0
 	}
@@ -1299,17 +1299,18 @@ Wiki.Nav.View = {
 		return m("div.sidebar", [
 			m("h2", "Ents24 Systems Docs"),
 			m("div.form-group", [
-				m("button.btn.btn-default", {onclick: function(){Wiki.Articles.vm.creating = true;}}, "New"),
+				m("button.btn.btn-default", {onclick: Wiki.Articles.vm.new}, "New"),
 				m("label.btn.btn-default", [
 					Wiki.Nav.vm.uploading ? m("i.fa.fa-circle-o-notch.fa-spin") : null,
-					" Browse ",
+					" Upload ",
+					m("i.fa.fa-upload"),
 					m("input[type=file]", {onchange: Wiki.Nav.vm.upload, style:"display: none;"})
 				]),
 			]),
 			Wiki.Nav.vm.error ? Wiki.Nav.vm.error : null,
 			m("div#tree-filter.input-group", [
 				m("input#tree-filter-query.form-control.input-sm", {placeholder: "Search", type: "text", oninput: m.withAttr("value", Wiki.Nav.vm.search), value: Wiki.Nav.vm.query}),
-				m("a#tree-filter-clear-query.input-group-addon.input-sm", {onclick:  Wiki.Nav.vm.clearResults}, m("i.glyphicon.glyphicon-remove")),
+				m("a#tree-filter-clear-query.input-group-addon.input-sm", {onclick:  Wiki.Nav.vm.clearResults}, m("i.fa.fa-times ")),
 			]),
 			Wiki.Nav.vm.results.length > 0 ? m(Wiki.Nav.Results, {results: Wiki.Nav.vm.results}): null,
 			m(Wiki.Nav.Tree, {tree : Wiki.Nav.vm.list})
@@ -1344,7 +1345,7 @@ Wiki.Nav.Tree = {
 							vnode.state.subfolders[key] = "open";
 						}
 					}}, [
-						m("i.glyphicon.glyphicon-folder-" + state),
+						m("i.fa.fa-folder" + (stateClass ? "-"+stateClass : "")),
 						" " + key
 					]),
 					m(Wiki.Nav.Tree, {tree: value, level: ++level})
@@ -1357,7 +1358,7 @@ Wiki.Nav.Tree = {
 };
 Wiki.Articles = {};
 Wiki.Articles.vm = {
-	creating: false,
+	creatingPath: "",
 	init: function() {
 		Wiki.Articles.vm.list = [];
 		Wiki.Articles.vm.id = 0;
@@ -1366,7 +1367,12 @@ Wiki.Articles.vm = {
 				method: "GET",
 				url: "article/" + articleId
 			}).then(function(result) {
-				Wiki.Articles.vm.add(result, addAfter);
+				Wiki.Articles.vm.add(Wiki.Articles.vm.create(result), addAfter);
+			}).catch(function(e) {
+				if(e.status == 404) {
+					Wiki.Articles.vm.creating = true;
+					Wiki.Articles.vm.new();
+				}
 			});
 		};
 		Wiki.Articles.vm.save = function(article) {
@@ -1381,23 +1387,19 @@ Wiki.Articles.vm = {
 				if(!response.success) {
 					alert(response.message);
 				} else {
-					if(article.new) {
-						Wiki.Articles.vm.load(article.path);
-						article.new = false;
-					}
 					Wiki.Nav.vm.load();
 				}
-			}).catch(function(e) {
-				alert(e.message);
 			});
 		};
-		Wiki.Articles.vm.add = function(data, addAfterArticle) {
-			Wiki.Articles.vm.id++;
+		Wiki.Articles.vm.create = function(data) {
+			return new Wiki.Article(++Wiki.Articles.vm.id, data);
+		};
+		Wiki.Articles.vm.add = function(article, addAfterArticle) {
 			if (typeof addAfterArticle == 'undefined' || addAfterArticle === null) {
-				Wiki.Articles.vm.list.push(new Wiki.Article(Wiki.Articles.vm.id, data));
+				Wiki.Articles.vm.list.push(article);
 			} else {
 				var afterIndex = Wiki.Articles.vm.list.indexOf(addAfterArticle);
-				Wiki.Articles.vm.list.splice(afterIndex, 0, new Wiki.Article(Wiki.Articles.vm.id, data));
+				Wiki.Articles.vm.list.splice(afterIndex, 0, article);
 			}
 		};
 		Wiki.Articles.vm.remove = function(article) {
@@ -1407,30 +1409,24 @@ Wiki.Articles.vm = {
 		Wiki.Articles.vm.up = function(article, vnode) {
 			var id = Wiki.Articles.vm.list.indexOf(article);
 			var newId = id+1;
-			//Already at the top
-			if(newId >= Wiki.Articles.vm.list.length) {
-				return;
-			}
-			var temp = Wiki.Articles.vm.list[newId];
-			Wiki.Articles.vm.list[newId] = Wiki.Articles.vm.list[id];
-			Wiki.Articles.vm.list[id] = temp;
-			//Mark these articles as sliding, so we can apply list move animations to them
-			article.sliding = true;
-			temp.sliding = true;
+			Wiki.Articles.vm.swap(id, newId);
 		};
 		Wiki.Articles.vm.down = function(article, vnode) {
 			var id = Wiki.Articles.vm.list.indexOf(article);
 			var newId = id-1;
-			//Already at the bottom
-			if(newId < 0) {
+			Wiki.Articles.vm.swap(id, newId);
+		};
+		Wiki.Articles.vm.swap = function(oldId, newId) {
+			if(newId < 0 || newId >= Wiki.Articles.vm.list.length) {
 				return;
 			}
-			var temp = Wiki.Articles.vm.list[newId];
-			Wiki.Articles.vm.list[newId] = Wiki.Articles.vm.list[id];
-			Wiki.Articles.vm.list[id] = temp;
+			var a = Wiki.Articles.vm.list[oldId];
+			var b = Wiki.Articles.vm.list[newId];
+			Wiki.Articles.vm.list[newId] = a;
+			Wiki.Articles.vm.list[oldId] = b;
 			//Mark these articles as sliding, so we can apply list move animations to them
-			article.sliding = true;
-			temp.sliding = true;
+			a.sliding = true;
+			b.sliding = true;
 		};
 		Wiki.Articles.vm.handleClick = function(article, e) {
 			if (e.target.nodeName == "A") {
@@ -1446,12 +1442,20 @@ Wiki.Articles.vm = {
 				}
 			}
 		};
+		Wiki.Articles.vm.new = function() {
+			var article = new Wiki.Article(++Wiki.Articles.vm.id);
+			//Put the article in edit mode
+			article.editing = true;
+			//Prefill a path if we have one
+			article.path = Wiki.Articles.vm.creatingPath;
+			Wiki.Articles.vm.add(article);
+		};
 		Wiki.Articles.vm.edit = function(item) {
 			item.editing = true;
 		};
 		Wiki.Articles.vm.done = function(item) {
 			item.editing = false;
-			Wiki.Articles.vm.creating = false;
+			Wiki.Articles.vm.creatingPath = "";
 		};
 		Wiki.Articles.vm.cleanup = function(article, vnode) {
 			var editor = vnode.dom.editor;
@@ -1470,9 +1474,6 @@ Wiki.Articles.View = {
 	},
 	view: function() {
 		var articles = [];
-		if(Wiki.Articles.vm.creating) {
-			articles.push(m(Wiki.NewArticleView));
-		}
 		for (var id = Wiki.Articles.vm.list.length - 1; id >= 0; id--) {
 			var article = Wiki.Articles.vm.list[id];
 			articles.push(m(Wiki.ArticleView, {article: article, key: article.id}));
@@ -1531,11 +1532,11 @@ Wiki.ArticleView = {
 		return m("div.article", [
 			m("div.article-controls.clearfix", [
 				m("div.pull-right", [
-					m("button.btn-invisible", {onclick: Wiki.Articles.vm.remove.bind(Wiki.Articles.vm, article)}, m("i.glyphicon.glyphicon-remove")),
-					m("button.btn-invisible", {onclick: Wiki.Articles.vm.up.bind(Wiki.Articles.vm, article, vnode)}, m("i.glyphicon.glyphicon-chevron-up")),
-					m("button.btn-invisible", {onclick: Wiki.Articles.vm.down.bind(Wiki.Articles.vm, article, vnode)}, m("i.glyphicon.glyphicon-chevron-down")),
-					!article.editing ? m("button.btn-invisible", {onclick: Wiki.Articles.vm.edit.bind(Wiki.Articles.vm, article)}, m("i.glyphicon.glyphicon-pencil")) : null,
-					article.editing ? m("button.btn-invisible", {onclick: Wiki.Articles.vm.done.bind(Wiki.Articles.vm, article)}, m("i.glyphicon.glyphicon-ok")) : null
+					m("button.btn-invisible", {onclick: Wiki.Articles.vm.remove.bind(Wiki.Articles.vm, article)}, m("i.fa.fa-times")),
+					m("button.btn-invisible", {onclick: Wiki.Articles.vm.up.bind(Wiki.Articles.vm, article, vnode)}, m("i.fa.fa-chevron-up")),
+					m("button.btn-invisible", {onclick: Wiki.Articles.vm.down.bind(Wiki.Articles.vm, article, vnode)}, m("i.fa.fa-chevron-down")),
+					!article.editing ? m("button.btn-invisible", {onclick: Wiki.Articles.vm.edit.bind(Wiki.Articles.vm, article)}, m("i.fa.fa-pencil")) : null,
+					article.editing ? m("button.btn-invisible", {onclick: Wiki.Articles.vm.done.bind(Wiki.Articles.vm, article)}, m("i.fa.fa-floppy-o")) : null
 				])
 			]),
 			!article.editing ? m("div.article-contents", { onclick: Wiki.Articles.vm.handleClick.bind(Wiki.Articles.vm, article) }, m.trust(article.html)) : null,
@@ -1557,18 +1558,6 @@ Wiki.ArticleView = {
 				])
 			]) : null,
 		]);
-	}
-};
-Wiki.NewArticleView = {
-	oninit: function(vnode) {
-		vnode.state.article = new Wiki.Article(++Wiki.Articles.vm.id);
-		//Put the article in edit mode
-		vnode.state.article.editing = true;
-		//And mark it as new so we know to insert it into the stack after it saves
-		vnode.state.article.new     = true;
-	},
-	view: function(vnode) {
-		return m(Wiki.ArticleView, {article: vnode.state.article});
 	}
 };
 var nav = document.getElementById("sidebar2");
