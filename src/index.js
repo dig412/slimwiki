@@ -79,7 +79,7 @@ Wiki.Nav.View = {
 		return m("div.sidebar", [
 			m("h2", "Ents24 Systems Docs"),
 			m("div.form-group", [
-				m("button.btn.btn-default", {onclick: function(){Wiki.Articles.vm.creating = true;}}, "New"),
+				m("button.btn.btn-default", {onclick: Wiki.Articles.vm.new}, "New"),
 				m("label.btn.btn-default", [
 					Wiki.Nav.vm.uploading ? m("i.fa.fa-circle-o-notch.fa-spin") : null,
 					" Upload ",
@@ -144,7 +144,7 @@ Wiki.Nav.Tree = {
 };
 Wiki.Articles = {};
 Wiki.Articles.vm = {
-	creating: false,
+	creatingPath: "",
 	init: function() {
 		Wiki.Articles.vm.list = [];
 		Wiki.Articles.vm.id = 0;
@@ -154,7 +154,12 @@ Wiki.Articles.vm = {
 				method: "GET",
 				url: "article/" + articleId
 			}).then(function(result) {
-				Wiki.Articles.vm.add(result, addAfter);
+				Wiki.Articles.vm.add(Wiki.Articles.vm.create(result), addAfter);
+			}).catch(function(e) {
+				if(e.status == 404) {
+					Wiki.Articles.vm.creatingPath = e.path;
+					Wiki.Articles.vm.new();
+				}
 			});
 		};
 		Wiki.Articles.vm.save = function(article) {
@@ -169,24 +174,19 @@ Wiki.Articles.vm = {
 				if(!response.success) {
 					alert(response.message);
 				} else {
-					if(article.new) {
-						Wiki.Articles.vm.load(article.path);
-						article.new = false;
-					}
 					Wiki.Nav.vm.load();
 				}
-			}).catch(function(e) {
-				alert(e.message);
 			});
 		};
-		Wiki.Articles.vm.add = function(data, addAfterArticle) {
-			Wiki.Articles.vm.id++;
-
+		Wiki.Articles.vm.create = function(data) {
+			return new Wiki.Article(++Wiki.Articles.vm.id, data);
+		};
+		Wiki.Articles.vm.add = function(article, addAfterArticle) {
 			if (typeof addAfterArticle == 'undefined' || addAfterArticle === null) {
-				Wiki.Articles.vm.list.push(new Wiki.Article(Wiki.Articles.vm.id, data));
+				Wiki.Articles.vm.list.push(article);
 			} else {
 				var afterIndex = Wiki.Articles.vm.list.indexOf(addAfterArticle);
-				Wiki.Articles.vm.list.splice(afterIndex, 0, new Wiki.Article(Wiki.Articles.vm.id, data));
+				Wiki.Articles.vm.list.splice(afterIndex, 0, article);
 			}
 		};
 		Wiki.Articles.vm.remove = function(article) {
@@ -243,12 +243,20 @@ Wiki.Articles.vm = {
 				}
 			}
 		};
+		Wiki.Articles.vm.new = function() {
+			var article = new Wiki.Article(++Wiki.Articles.vm.id);
+			//Put the article in edit mode
+			article.editing = true;
+			//Prefill a path if we have one
+			article.path = Wiki.Articles.vm.creatingPath;
+			Wiki.Articles.vm.add(article);
+		};
 		Wiki.Articles.vm.edit = function(item) {
 			item.editing = true;
 		};
 		Wiki.Articles.vm.done = function(item) {
 			item.editing = false;
-			Wiki.Articles.vm.creating = false;
+			Wiki.Articles.vm.creatingPath = "";
 		};
 		Wiki.Articles.vm.cleanup = function(article, vnode) {
 			var editor = vnode.dom.editor;
@@ -269,10 +277,6 @@ Wiki.Articles.View = {
 	},
 	view: function() {
 		var articles = [];
-
-		if(Wiki.Articles.vm.creating) {
-			articles.push(m(Wiki.NewArticleView));
-		}
 
 		for (var id = Wiki.Articles.vm.list.length - 1; id >= 0; id--) {
 			var article = Wiki.Articles.vm.list[id];
@@ -363,19 +367,6 @@ Wiki.ArticleView = {
 				])
 			]) : null,
 		]);
-	}
-};
-
-Wiki.NewArticleView = {
-	oninit: function(vnode) {
-		vnode.state.article = new Wiki.Article(++Wiki.Articles.vm.id);
-		//Put the article in edit mode
-		vnode.state.article.editing = true;
-		//And mark it as new so we know to insert it into the stack after it saves
-		vnode.state.article.new     = true;
-	},
-	view: function(vnode) {
-		return m(Wiki.ArticleView, {article: vnode.state.article});
 	}
 };
 
