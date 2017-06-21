@@ -49,13 +49,25 @@ $app->get('/article/{article_path:.*}', function (Request $request, Response $re
 
 	$path = $request->getAttribute('article_path');
 
+	if(!$filesystem->has($path)) {
+		$results = [
+			"success" => false,
+			"message" => "Article $path does not exist",
+			"status"  => 404,
+			"path"    => $path
+		];
+
+		$response = $response->withJson($results)->withStatus(404);
+		return $response;
+	}
+
 	$source = $filesystem->read($path);
 	$html = $markdown->text($source);
 
 	$results = [
-		"html" => $html,
+		"html"   => $html,
 		"source" => $source,
-		"path" => $path
+		"path"   => $path
 	];
 
 	$response = $response->withJson($results);
