@@ -197,33 +197,27 @@ Wiki.Articles.vm = {
 			var id = Wiki.Articles.vm.list.indexOf(article);
 			var newId = id+1;
 
-			//Already at the top
-			if(newId >= Wiki.Articles.vm.list.length) {
-				return;
-			}
-
-			var temp = Wiki.Articles.vm.list[newId];
-			Wiki.Articles.vm.list[newId] = Wiki.Articles.vm.list[id];
-			Wiki.Articles.vm.list[id] = temp;
-			//Mark these articles as sliding, so we can apply list move animations to them
-			article.sliding = true;
-			temp.sliding = true;
+			Wiki.Articles.vm.swap(id, newId);
 		};
 		Wiki.Articles.vm.down = function(article, vnode) {
 			var id = Wiki.Articles.vm.list.indexOf(article);
 			var newId = id-1;
 
-			//Already at the bottom
-			if(newId < 0) {
+			Wiki.Articles.vm.swap(id, newId);
+		};
+		Wiki.Articles.vm.swap = function(oldId, newId) {
+
+			if(newId < 0 || newId >= Wiki.Articles.vm.list.length) {
 				return;
 			}
 
-			var temp = Wiki.Articles.vm.list[newId];
-			Wiki.Articles.vm.list[newId] = Wiki.Articles.vm.list[id];
-			Wiki.Articles.vm.list[id] = temp;
+			var a = Wiki.Articles.vm.list[oldId];
+			var b = Wiki.Articles.vm.list[newId];
+			Wiki.Articles.vm.list[newId] = a;
+			Wiki.Articles.vm.list[oldId] = b;
 			//Mark these articles as sliding, so we can apply list move animations to them
-			article.sliding = true;
-			temp.sliding = true;
+			a.sliding = true;
+			b.sliding = true;
 		};
 		Wiki.Articles.vm.handleClick = function(article, e) {
 
