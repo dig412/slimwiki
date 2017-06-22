@@ -35,11 +35,6 @@ $container['markdown'] = function ($container) {
 };
 $container['view'] = new \Slim\Views\PhpRenderer(__DIR__ . "/../templates/");
 
-$app->get('/', function (Request $request, Response $response) {
-	$response = $this->view->render($response, "index.phtml");
-	return $response;
-});
-
 $app->get('/tree', function (Request $request, Response $response) {
 	$filesystem = $this->get('library');
 	$files = $filesystem->listTree(".");
@@ -155,6 +150,13 @@ $app->post('/upload', function (Request $request, Response $response) {
 		$response = $response->withStatus(400);
 	}
 
+	return $response;
+});
+
+$app->get('/[{article_path:.*}]', function (Request $request, Response $response) {
+
+	$scriptDirectory = dirname($_SERVER['SCRIPT_NAME']);
+	$response = $this->view->render($response, "index.phtml", ["root" => $scriptDirectory]);
 	return $response;
 });
 

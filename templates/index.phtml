@@ -3,8 +3,8 @@
 <head>
 	<title>Slim Wiki</title>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-	<link rel="stylesheet" type="text/css" href="css/main.css" />
-	<link rel="stylesheet" type="text/css" href="css/simplemde.min.css" />
+	<link rel="stylesheet" type="text/css" href="<?=$root?>/css/main.css" />
+	<link rel="stylesheet" type="text/css" href="<?=$root?>/css/simplemde.min.css" />
 	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
@@ -16,7 +16,11 @@
 			</div>
 		</div>
 
-		<script type="text/javascript" src="js/app.js"></script>
-		<script type="text/javascript" src="js/simplemde.min.js"></script>
+		<script type="text/javascript">
+			var Config = {};
+			Config.root = "<?=$root?>/";
+		</script>
+		<script type="text/javascript" src="<?=$root?>/js/app.js"></script>
+		<script type="text/javascript" src="<?=$root?>/js/simplemde.min.js"></script>
 	</body>
 </html>

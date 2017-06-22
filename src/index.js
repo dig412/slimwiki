@@ -29,7 +29,7 @@ Wiki.Nav.vm = {
 	load: function() {
 		return m.request({
 			method: "GET",
-			url: "tree",
+			url: Config.root + "/tree",
 		})
 		.then(function(result) {
 			Wiki.Nav.vm.list = result;
@@ -39,7 +39,7 @@ Wiki.Nav.vm = {
 		Wiki.Nav.vm.query = query;
 		return m.request({
 			method: "GET",
-			url: "search/"+query,
+			url: Config.root + "/search/"+query,
 		})
 		.then(function(result) {
 			Wiki.Nav.vm.results = result;
@@ -59,7 +59,7 @@ Wiki.Nav.vm = {
 
 		m.request({
 			method: "POST",
-			url: "upload",
+			url: Config.root + "upload",
 			data: data,
 		}).then(function(result) {
 			Wiki.Nav.vm.load();
@@ -151,7 +151,7 @@ Wiki.Articles.vm = {
 		Wiki.Articles.vm.load = function(articleId, addAfter) {
 			return m.request({
 				method: "GET",
-				url: "article/" + articleId
+				url: Config.root + "article/" + articleId
 			}).then(function(result) {
 				Wiki.Articles.vm.add(Wiki.Articles.vm.create(result), addAfter);
 			}).catch(function(e) {
@@ -167,7 +167,7 @@ Wiki.Articles.vm = {
 			formData.append("source", article.source);
 			return m.request({
 				method: "POST",
-				url: "article",
+				url: Config.root + "/article",
 				data: formData,
 			}).then(function(response) {
 				if(!response.success) {
@@ -260,7 +260,13 @@ Wiki.Articles.vm = {
 			Wiki.Articles.vm.save(article);
 		};
 
-		Wiki.Articles.vm.load("index.md");
+		var articlePath = window.location.pathname.split(Config.root)[1];
+
+		if(articlePath === "") {
+			articlePath = "index.md";
+		}
+
+		Wiki.Articles.vm.load(articlePath);
 	}
 };
 
