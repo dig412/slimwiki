@@ -105,6 +105,27 @@ ul.search-results {
     box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 }
 
+.article-contents {
+    margin-top: -40px;
+    h1,h2,h3,h4,h5 {
+        font-weight: 300;
+        line-height: 1.2em;
+        color: #182955;
+    }
+    h1 {
+        font-size: 30px;
+    }
+    h2 {
+        font-size: 24px;
+    }
+    h3 {
+        font-size: 18px;
+    }
+    h4 {
+        font-size: 15px;
+    }
+}
+
 .article-contents h1 {
     font-weight: 300;
     font-size: 2.35em;
