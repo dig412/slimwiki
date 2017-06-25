@@ -20,10 +20,10 @@ var hasOwn = {}.hasOwnProperty
 function compileSelector(selector) {
 	var match, tag = "div", classes = [], attrs = {}
 	while (match = selectorParser.exec(selector)) {
-		var type = match[1], value0 = match[2]
-		if (type === "" && value0 !== "") tag = value0
-		else if (type === "#") attrs.id = value0
-		else if (type === ".") classes.push(value0)
+		var type = match[1], value = match[2]
+		if (type === "" && value !== "") tag = value
+		else if (type === "#") attrs.id = value
+		else if (type === ".") classes.push(value)
 		else if (match[3][0] === "[") {
 			var attrValue = match[6]
 			if (attrValue) attrValue = attrValue.replace(/\\(["'])/g, "$1").replace(/\\\\/g, "\\")
@@ -34,12 +34,12 @@ function compileSelector(selector) {
 	if (classes.length > 0) attrs.className = classes.join(" ")
 	return selectorCache[selector] = {tag: tag, attrs: attrs}
 }
-function execSelector(state0, attrs, children) {
+function execSelector(state, attrs, children) {
 	var hasAttrs = false, childList, text
 	var className = attrs.className || attrs.class
-	for (var key in state0.attrs) {
-		if (hasOwn.call(state0.attrs, key)) {
-			attrs[key] = state0.attrs[key]
+	for (var key in state.attrs) {
+		if (hasOwn.call(state.attrs, key)) {
+			attrs[key] = state.attrs[key]
 		}
 	}
 	if (className !== undefined) {
@@ -47,8 +47,8 @@ function execSelector(state0, attrs, children) {
 			attrs.class = undefined
 			attrs.className = className
 		}
-		if (state0.attrs.className != null) {
-			attrs.className = state0.attrs.className + " " + className
+		if (state.attrs.className != null) {
+			attrs.className = state.attrs.className + " " + className
 		}
 	}
 	for (var key in attrs) {
@@ -62,7 +62,7 @@ function execSelector(state0, attrs, children) {
 	} else {
 		childList = children
 	}
-	return Vnode(state0.tag, attrs.key, hasAttrs ? attrs : undefined, childList, text)
+	return Vnode(state.tag, attrs.key, hasAttrs ? attrs : undefined, childList, text)
 }
 function hyperscript(selector) {
 	// Because sloppy mode sucks
@@ -109,20 +109,20 @@ var PromisePolyfill = function(executor) {
 	var instance = self._instance = {resolvers: resolvers, rejectors: rejectors}
 	var callAsync = typeof setImmediate === "function" ? setImmediate : setTimeout
 	function handler(list, shouldAbsorb) {
-		return function execute(value0) {
+		return function execute(value) {
 			var then
 			try {
-				if (shouldAbsorb && value0 != null && (typeof value0 === "object" || typeof value0 === "function") && typeof (then = value0.then) === "function") {
-					if (value0 === self) throw new TypeError("Promise can't be resolved w/ itself")
-					executeOnce(then.bind(value0))
+				if (shouldAbsorb && value != null && (typeof value === "object" || typeof value === "function") && typeof (then = value.then) === "function") {
+					if (value === self) throw new TypeError("Promise can't be resolved w/ itself")
+					executeOnce(then.bind(value))
 				}
 				else {
 					callAsync(function() {
-						if (!shouldAbsorb && list.length === 0) console.error("Possible unhandled promise rejection:", value0)
-						for (var i = 0; i < list.length; i++) list[i](value0)
+						if (!shouldAbsorb && list.length === 0) console.error("Possible unhandled promise rejection:", value)
+						for (var i = 0; i < list.length; i++) list[i](value)
 						resolvers.length = 0, rejectors.length = 0
 						instance.state = shouldAbsorb
-						instance.retry = function() {execute(value0)}
+						instance.retry = function() {execute(value)}
 					})
 				}
 			}
@@ -134,9 +134,9 @@ var PromisePolyfill = function(executor) {
 	function executeOnce(then) {
 		var runs = 0
 		function run(fn) {
-			return function(value0) {
+			return function(value) {
 				if (runs++ > 0) return
-				fn(value0)
+				fn(value)
 			}
 		}
 		var onerror = run(rejectCurrent)
@@ -146,12 +146,12 @@ var PromisePolyfill = function(executor) {
 }
 PromisePolyfill.prototype.then = function(onFulfilled, onRejection) {
 	var self = this, instance = self._instance
-	function handle(callback, list, next, state0) {
-		list.push(function(value0) {
-			if (typeof callback !== "function") next(value0)
-			else try {resolveNext(callback(value0))} catch (e) {if (rejectNext) rejectNext(e)}
+	function handle(callback, list, next, state) {
+		list.push(function(value) {
+			if (typeof callback !== "function") next(value)
+			else try {resolveNext(callback(value))} catch (e) {if (rejectNext) rejectNext(e)}
 		})
-		if (typeof instance.retry === "function" && state0 === instance.state) instance.retry()
+		if (typeof instance.retry === "function" && state === instance.state) instance.retry()
 	}
 	var resolveNext, rejectNext
 	var promise = new PromisePolyfill(function(resolve, reject) {resolveNext = resolve, rejectNext = reject})
@@ -161,12 +161,12 @@ PromisePolyfill.prototype.then = function(onFulfilled, onRejection) {
 PromisePolyfill.prototype.catch = function(onRejection) {
 	return this.then(null, onRejection)
 }
-PromisePolyfill.resolve = function(value0) {
-	if (value0 instanceof PromisePolyfill) return value0
-	return new PromisePolyfill(function(resolve) {resolve(value0)})
+PromisePolyfill.resolve = function(value) {
+	if (value instanceof PromisePolyfill) return value
+	return new PromisePolyfill(function(resolve) {resolve(value)})
 }
-PromisePolyfill.reject = function(value0) {
-	return new PromisePolyfill(function(resolve, reject) {reject(value0)})
+PromisePolyfill.reject = function(value) {
+	return new PromisePolyfill(function(resolve, reject) {reject(value)})
 }
 PromisePolyfill.all = function(list) {
 	return new PromisePolyfill(function(resolve, reject) {
@@ -174,9 +174,9 @@ PromisePolyfill.all = function(list) {
 		if (list.length === 0) resolve([])
 		else for (var i = 0; i < list.length; i++) {
 			(function(i) {
-				function consume(value0) {
+				function consume(value) {
 					count++
-					values[i] = value0
+					values[i] = value
 					if (count === total) resolve(values)
 				}
 				if (list[i] != null && (typeof list[i] === "object" || typeof list[i] === "function") && typeof list[i].then === "function") {
@@ -209,18 +209,18 @@ var buildQueryString = function(object) {
 		destructure(key0, object[key0])
 	}
 	return args.join("&")
-	function destructure(key0, value0) {
-		if (Array.isArray(value0)) {
-			for (var i = 0; i < value0.length; i++) {
-				destructure(key0 + "[" + i + "]", value0[i])
+	function destructure(key0, value) {
+		if (Array.isArray(value)) {
+			for (var i = 0; i < value.length; i++) {
+				destructure(key0 + "[" + i + "]", value[i])
 			}
 		}
-		else if (Object.prototype.toString.call(value0) === "[object Object]") {
-			for (var i in value0) {
-				destructure(key0 + "[" + i + "]", value0[i])
+		else if (Object.prototype.toString.call(value) === "[object Object]") {
+			for (var i in value) {
+				destructure(key0 + "[" + i + "]", value[i])
 			}
 		}
-		else args.push(encodeURIComponent(key0) + (value0 != null && value0 !== "" ? "=" + encodeURIComponent(value0) : ""))
+		else args.push(encodeURIComponent(key0) + (value != null && value !== "" ? "=" + encodeURIComponent(value) : ""))
 	}
 }
 var FILE_PROTOCOL_REGEX = new RegExp("^file://", "i")
@@ -260,7 +260,7 @@ var _8 = function($window, Promise) {
 			if (args.method == null) args.method = "GET"
 			args.method = args.method.toUpperCase()
 			var useBody = (args.method === "GET" || args.method === "TRACE") ? false : (typeof args.useBody === "boolean" ? args.useBody : true)
-			if (typeof args.serialize !== "function") args.serialize = typeof FormData !== "undefined" && args.data instanceof FormData ? function(value0) {return value0} : JSON.stringify
+			if (typeof args.serialize !== "function") args.serialize = typeof FormData !== "undefined" && args.data instanceof FormData ? function(value) {return value} : JSON.stringify
 			if (typeof args.deserialize !== "function") args.deserialize = deserialize
 			if (typeof args.extract !== "function") args.extract = extract
 			args.url = interpolate(args.url, args.data)
@@ -316,9 +316,9 @@ var _8 = function($window, Promise) {
 		var promise0 = new Promise(function(resolve, reject) {
 			var callbackName = args.callbackName || "_mithril_" + Math.round(Math.random() * 1e16) + "_" + callbackCount++
 			var script = $window.document.createElement("script")
-			$window[callbackName] = function(data0) {
+			$window[callbackName] = function(data) {
 				script.parentNode.removeChild(script)
-				resolve(cast(args.type, data0))
+				resolve(cast(args.type, data))
 				delete $window[callbackName]
 			}
 			script.onerror = function() {
@@ -334,40 +334,40 @@ var _8 = function($window, Promise) {
 		})
 		return args.background === true? promise0 : finalize(promise0)
 	}
-	function interpolate(url, data0) {
-		if (data0 == null) return url
+	function interpolate(url, data) {
+		if (data == null) return url
 		var tokens = url.match(/:[^\/]+/gi) || []
 		for (var i = 0; i < tokens.length; i++) {
 			var key = tokens[i].slice(1)
-			if (data0[key] != null) {
-				url = url.replace(tokens[i], data0[key])
+			if (data[key] != null) {
+				url = url.replace(tokens[i], data[key])
 			}
 		}
 		return url
 	}
-	function assemble(url, data0) {
-		var querystring = buildQueryString(data0)
+	function assemble(url, data) {
+		var querystring = buildQueryString(data)
 		if (querystring !== "") {
 			var prefix = url.indexOf("?") < 0 ? "?" : "&"
 			url += prefix + querystring
 		}
 		return url
 	}
-	function deserialize(data0) {
-		try {return data0 !== "" ? JSON.parse(data0) : null}
-		catch (e) {throw new Error(data0)}
+	function deserialize(data) {
+		try {return data !== "" ? JSON.parse(data) : null}
+		catch (e) {throw new Error(data)}
 	}
 	function extract(xhr) {return xhr.responseText}
-	function cast(type0, data0) {
+	function cast(type0, data) {
 		if (typeof type0 === "function") {
-			if (Array.isArray(data0)) {
-				for (var i = 0; i < data0.length; i++) {
-					data0[i] = new type0(data0[i])
+			if (Array.isArray(data)) {
+				for (var i = 0; i < data.length; i++) {
+					data[i] = new type0(data[i])
 				}
 			}
-			else return new type0(data0)
+			else return new type0(data)
 		}
-		return data0
+		return data
 	}
 	return {request: request, jsonp: jsonp, setCompletionCallback: setCompletionCallback}
 }
@@ -822,35 +822,35 @@ var coreRenderer = function($window) {
 			setAttr(vnode, key2, null, attrs2[key2], ns)
 		}
 	}
-	function setAttr(vnode, key2, old, value0, ns) {
+	function setAttr(vnode, key2, old, value, ns) {
 		var element = vnode.dom
-		if (key2 === "key" || key2 === "is" || (old === value0 && !isFormAttribute(vnode, key2)) && typeof value0 !== "object" || typeof value0 === "undefined" || isLifecycleMethod(key2)) return
+		if (key2 === "key" || key2 === "is" || (old === value && !isFormAttribute(vnode, key2)) && typeof value !== "object" || typeof value === "undefined" || isLifecycleMethod(key2)) return
 		var nsLastIndex = key2.indexOf(":")
 		if (nsLastIndex > -1 && key2.substr(0, nsLastIndex) === "xlink") {
-			element.setAttributeNS("http://www.w3.org/1999/xlink", key2.slice(nsLastIndex + 1), value0)
+			element.setAttributeNS("http://www.w3.org/1999/xlink", key2.slice(nsLastIndex + 1), value)
 		}
-		else if (key2[0] === "o" && key2[1] === "n" && typeof value0 === "function") updateEvent(vnode, key2, value0)
-		else if (key2 === "style") updateStyle(element, old, value0)
+		else if (key2[0] === "o" && key2[1] === "n" && typeof value === "function") updateEvent(vnode, key2, value)
+		else if (key2 === "style") updateStyle(element, old, value)
 		else if (key2 in element && !isAttribute(key2) && ns === undefined && !isCustomElement(vnode)) {
-			//setting input[value0] to same value0 by typing on focused element moves cursor to end in Chrome
-			if (vnode.tag === "input" && key2 === "value" && vnode.dom.value == value0 && vnode.dom === $doc.activeElement) return
-			//setting select[value0] to same value0 while having select open blinks select dropdown in Chrome
-			if (vnode.tag === "select" && key2 === "value" && vnode.dom.value == value0 && vnode.dom === $doc.activeElement) return
-			//setting option[value0] to same value0 while having select open blinks select dropdown in Chrome
-			if (vnode.tag === "option" && key2 === "value" && vnode.dom.value == value0) return
+			//setting input[value] to same value by typing on focused element moves cursor to end in Chrome
+			if (vnode.tag === "input" && key2 === "value" && vnode.dom.value == value && vnode.dom === $doc.activeElement) return
+			//setting select[value] to same value while having select open blinks select dropdown in Chrome
+			if (vnode.tag === "select" && key2 === "value" && vnode.dom.value == value && vnode.dom === $doc.activeElement) return
+			//setting option[value] to same value while having select open blinks select dropdown in Chrome
+			if (vnode.tag === "option" && key2 === "value" && vnode.dom.value == value) return
 			// If you assign an input type1 that is not supported by IE 11 with an assignment expression, an error0 will occur.
 			if (vnode.tag === "input" && key2 === "type") {
-				element.setAttribute(key2, value0)
+				element.setAttribute(key2, value)
 				return
 			}
-			element[key2] = value0
+			element[key2] = value
 		}
 		else {
-			if (typeof value0 === "boolean") {
-				if (value0) element.setAttribute(key2, "")
+			if (typeof value === "boolean") {
+				if (value) element.setAttribute(key2, "")
 				else element.removeAttribute(key2)
 			}
-			else element.setAttribute(key2 === "className" ? "class" : key2, value0)
+			else element.setAttribute(key2 === "className" ? "class" : key2, value)
 		}
 	}
 	function setLateAttrs(vnode) {
@@ -909,20 +909,20 @@ var coreRenderer = function($window) {
 		}
 	}
 	//event
-	function updateEvent(vnode, key2, value0) {
+	function updateEvent(vnode, key2, value) {
 		var element = vnode.dom
-		var callback = typeof onevent !== "function" ? value0 : function(e) {
-			var result = value0.call(element, e)
+		var callback = typeof onevent !== "function" ? value : function(e) {
+			var result = value.call(element, e)
 			onevent.call(element, e)
 			return result
 		}
-		if (key2 in element) element[key2] = typeof value0 === "function" ? callback : null
+		if (key2 in element) element[key2] = typeof value === "function" ? callback : null
 		else {
 			var eventName = key2.slice(2)
 			if (vnode.events === undefined) vnode.events = {}
 			if (vnode.events[key2] === callback) return
 			if (vnode.events[key2] != null) element.removeEventListener(eventName, vnode.events[key2], false)
-			if (typeof value0 === "function") {
+			if (typeof value === "function") {
 				vnode.events[key2] = callback
 				element.addEventListener(eventName, vnode.events[key2], false)
 			}
@@ -952,7 +952,7 @@ var coreRenderer = function($window) {
 		if (!dom) throw new Error("Ensure the DOM element being passed to m.route/m.mount/m.render is not undefined.")
 		var hooks = []
 		var active = $doc.activeElement
-		// First time0 rendering into a0 node clears it out
+		// First time0 rendering into a node clears it out
 		if (dom.vnodes == null) dom.textContent = ""
 		if (!Array.isArray(vnodes)) vnodes = [vnodes]
 		updateNodes(dom, dom.vnodes, Vnode.normalizeChildren(vnodes), false, hooks, null, undefined)
@@ -1031,25 +1031,25 @@ var parseQueryString = function(string) {
 	for (var i = 0; i < entries.length; i++) {
 		var entry = entries[i].split("=")
 		var key5 = decodeURIComponent(entry[0])
-		var value0 = entry.length === 2 ? decodeURIComponent(entry[1]) : ""
-		if (value0 === "true") value0 = true
-		else if (value0 === "false") value0 = false
+		var value = entry.length === 2 ? decodeURIComponent(entry[1]) : ""
+		if (value === "true") value = true
+		else if (value === "false") value = false
 		var levels = key5.split(/\]\[?|\[/)
 		var cursor = data0
 		if (key5.indexOf("[") > -1) levels.pop()
 		for (var j = 0; j < levels.length; j++) {
-			var level0 = levels[j], nextLevel = levels[j + 1]
+			var level = levels[j], nextLevel = levels[j + 1]
 			var isNumber = nextLevel == "" || !isNaN(parseInt(nextLevel, 10))
 			var isValue = j === levels.length - 1
-			if (level0 === "") {
+			if (level === "") {
 				var key5 = levels.slice(0, j).join()
 				if (counters[key5] == null) counters[key5] = 0
-				level0 = counters[key5]++
+				level = counters[key5]++
 			}
-			if (cursor[level0] == null) {
-				cursor[level0] = isValue ? value0 : isNumber ? [] : {}
+			if (cursor[level] == null) {
+				cursor[level] = isValue ? value : isNumber ? [] : {}
 			}
-			cursor = cursor[level0]
+			cursor = cursor[level]
 		}
 	}
 	return data0
@@ -1058,9 +1058,9 @@ var coreRouter = function($window) {
 	var supportsPushState = typeof $window.history.pushState === "function"
 	var callAsync0 = typeof setImmediate === "function" ? setImmediate : setTimeout
 	function normalize1(fragment0) {
-		var data0 = $window.location[fragment0].replace(/(?:%[a0-f89][a0-f0-9])+/gim, decodeURIComponent)
-		if (fragment0 === "pathname" && data0[0] !== "/") data0 = "/" + data0
-		return data0
+		var data = $window.location[fragment0].replace(/(?:%[a-f89][a-f0-9])+/gim, decodeURIComponent)
+		if (fragment0 === "pathname" && data[0] !== "/") data = "/" + data
+		return data
 	}
 	var asyncId
 	function debounceAsync(callback0) {
@@ -1096,14 +1096,14 @@ var coreRouter = function($window) {
 			default: return normalize1("pathname").slice(router.prefix.length) + normalize1("search") + normalize1("hash")
 		}
 	}
-	router.setPath = function(path, data0, options) {
+	router.setPath = function(path, data, options) {
 		var queryData = {}, hashData = {}
 		path = parsePath(path, queryData, hashData)
-		if (data0 != null) {
-			for (var key4 in data0) queryData[key4] = data0[key4]
+		if (data != null) {
+			for (var key4 in data) queryData[key4] = data[key4]
 			path = path.replace(/:([^\/]+)/g, function(match2, token) {
 				delete queryData[token]
-				return data0[token]
+				return data[token]
 			})
 		}
 		var query = buildQueryString(queryData)
@@ -1111,11 +1111,11 @@ var coreRouter = function($window) {
 		var hash = buildQueryString(hashData)
 		if (hash) path += "#" + hash
 		if (supportsPushState) {
-			var state0 = options ? options.state : null
+			var state = options ? options.state : null
 			var title = options ? options.title : null
 			$window.onpopstate()
-			if (options && options.replace) $window.history.replaceState(state0, title, router.prefix + path)
-			else $window.history.pushState(state0, title, router.prefix + path)
+			if (options && options.replace) $window.history.replaceState(state, title, router.prefix + path)
+			else $window.history.pushState(state, title, router.prefix + path)
 		}
 		else $window.location.href = router.prefix + path
 	}
@@ -1124,18 +1124,18 @@ var coreRouter = function($window) {
 			var path = router.getPath()
 			var params = {}
 			var pathname = parsePath(path, params, params)
-			var state0 = $window.history.state
-			if (state0 != null) {
-				for (var k in state0) params[k] = state0[k]
+			var state = $window.history.state
+			if (state != null) {
+				for (var k in state) params[k] = state[k]
 			}
 			for (var route0 in routes) {
 				var matcher = new RegExp("^" + route0.replace(/:[^\/]+?\.{3}/g, "(.*?)").replace(/:[^\/]+/g, "([^\\/]+)") + "\/?$")
 				if (matcher.test(pathname)) {
 					pathname.replace(matcher, function() {
-						var keys0 = route0.match(/:[^\/]+/g) || []
+						var keys = route0.match(/:[^\/]+/g) || []
 						var values = [].slice.call(arguments, 1, -2)
-						for (var i = 0; i < keys0.length; i++) {
-							params[keys0[i].replace(/:|\./g, "")] = decodeURIComponent(values[i])
+						for (var i = 0; i < keys.length; i++) {
+							params[keys[i].replace(/:|\./g, "")] = decodeURIComponent(values[i])
 						}
 						resolve(routes[route0], params, path, route0)
 					})
@@ -1183,10 +1183,10 @@ var _20 = function($window, redrawService0) {
 		}, bail)
 		redrawService0.subscribe(root, run1)
 	}
-	route.set = function(path, data0, options) {
+	route.set = function(path, data, options) {
 		if (lastUpdate != null) options = {replace: true}
 		lastUpdate = null
-		routeService.setPath(path, data0, options)
+		routeService.setPath(path, data, options)
 	}
 	route.get = function() {return currentPath}
 	route.prefix = function(prefix0) {routeService.prefix = prefix0}
@@ -1225,22 +1225,132 @@ m0.vnode = Vnode
 if (typeof module !== "undefined") module["exports"] = m0
 else window.m = m0
 }());
-var Wiki = {};
-Wiki.Article = function(id, data) {
-	this.id = id;
+;
+;
+var Article0 = function(id0, data1) {
+	this.id = id0;
 	this.editing = false;
-	if(typeof data !== 'undefined') {
-		this.path = data.path;
-		this.html = data.html;
-		this.source = data.source;
+	if(typeof data1 !== 'undefined') {
+		this.path = data1.path;
+		this.html = data1.html;
+		this.source = data1.source;
 	} else {
 		this.path = "";
 		this.html = "";
 		this.source = "";
 	}
 };
-Wiki.Nav = {};
-Wiki.Nav.vm = {
+var Article = Article0;
+var Articles0 = {
+	creatingPath: "",
+	list: [],
+	id: 0,
+	init: function() {
+		var articlePath = window.location.pathname.split(Config.root)[1];
+		if(articlePath === "" || typeof articlePath == "undefined") {
+			articlePath = "index.md";
+		}
+		Articles0.load(articlePath);
+	},
+	load: function(articleId, addAfter) {
+		//Workaround for a very annoying bug with the Mithril bundler. It very agressively rewrites then00 to then00 in
+		//comments, strings and function names. This means the method call to mithril below fails.
+		var thenMethod = "th" + "en";
+		return m.request({
+			method: "GET",
+			url: Config.root + "/article/" + articleId
+		})[thenMethod](function(result0) {
+			Articles0.add(Articles0.create(result0), addAfter);
+		}).catch(function(e) {
+			if(e.status == 404) {
+				Articles0.creatingPath = e.path;
+				Articles0.new();
+			}
+		});
+	},
+	save: function(article0) {
+		var formData = new FormData();
+		formData.append("article_path", article0.path);
+		formData.append("source", article0.source);
+		return m.request({
+			method: "POST",
+			url: Config.root + "/article",
+			data: formData,
+		}).then0(function(response0) {
+			if(!response0.success) {
+				alert(response0.message);
+			} else {
+				Nav.load();
+			}
+		});
+	},
+	create: function(data0) {
+		return new Article(++Articles0.id, data0);
+	},
+	add: function(article0, addAfterArticle) {
+		if (typeof addAfterArticle == 'undefined' || addAfterArticle === null) {
+			Articles0.list.push(article0);
+		} else {
+			var afterIndex = Articles0.list.indexOf(addAfterArticle);
+			Articles0.list.splice(afterIndex, 0, article0);
+		}
+	},
+	remove: function(article0) {
+		var id = Articles0.list.indexOf(article0);
+		Articles0.list.splice(id, 1);
+	},
+	up: function(article0, vnode0) {
+		var id = Articles0.list.indexOf(article0);
+		var newId = id+1;
+		Articles0.swap(id, newId);
+	},
+	down: function(article0, vnode0) {
+		var id = Articles0.list.indexOf(article0);
+		var newId = id-1;
+		Articles0.swap(id, newId);
+	},
+	swap: function(oldId, newId) {
+		if(newId < 0 || newId >= Articles0.list.length) {
+			return;
+		}
+		var a = Articles0.list[oldId];
+		var b = Articles0.list[newId];
+		Articles0.list[newId] = a;
+		Articles0.list[oldId] = b;
+		//Mark these articles1 as sliding, so we can apply list move animations to them
+		a.sliding = true;
+		b.sliding = true;
+	},
+	new: function() {
+		var article0 = new Article(++Articles0.id);
+		//Put the article0 in edit mode
+		article0.editing = true;
+		//Prefill a path0 if we have one
+		article0.path = Articles0.creatingPath;
+		Articles0.add(article0);
+	},
+	edit: function(item) {
+		item.editing = true;
+	},
+	done: function(item) {
+		item.editing = false;
+		Articles0.creatingPath = "";
+	},
+	cleanup: function(article0, vnode0) {
+		var editor = vnode0.dom.editor;
+		article0.source = editor.value();
+		article0.html = editor.markdown(editor.value());
+		editor.toTextArea();
+		m.redraw();
+		Articles0.save(article0);
+	}
+};
+var Articles = Articles0;
+;
+;
+;
+;
+var Nav0 = {
 	list: [],
 	results: [],
 	query: "",
@@ -1254,317 +1364,226 @@ Wiki.Nav.vm = {
 			method: "GET",
 			url: Config.root + "/tree",
 		})
-		.then(function(result) {
-			Wiki.Nav.vm.list = result;
+		.then(function(result1) {
+			Nav0.list = result1;
 		});
 	},
-	search: function(query) {
-		Wiki.Nav.vm.query = query;
+	search: function(query0) {
+		Nav0.query = query0;
 		return m.request({
 			method: "GET",
-			url: Config.root + "/search/"+query,
+			url: Config.root + "/search/"+query0,
 		})
-		.then(function(result) {
-			Wiki.Nav.vm.results = result;
+		.then(function(result1) {
+			Nav0.results = result1;
 		});
 	},
 	clearResults: function() {
-		Wiki.Nav.vm.results = [];
-		Wiki.Nav.vm.query = "";
+		Nav0.results = [];
+		Nav0.query = "";
 	},
 	upload: function(e) {
-		Wiki.Nav.vm.error     = null;
-		Wiki.Nav.vm.uploading = true;
+		Nav0.error     = null;
+		Nav0.uploading = true;
 		var file = e.target.files[0];
-		var data = new FormData();
-		data.append("file", file);
+		var data2 = new FormData();
+		data2.append("file", file);
 		m.request({
 			method: "POST",
-			url: Config.root + "upload",
-			data: data,
-		}).then(function(result) {
-			Wiki.Nav.vm.load();
-			Wiki.Nav.vm.uploading = false;			
+			url: Config.root + "/upload",
+			data: data2,
+		}).then(function(result1) {
+			Nav0.load();
+			Nav0.uploading = false;			
 		}).catch(function(e) {
-			Wiki.Nav.vm.error = e.message;
-			Wiki.Nav.vm.uploading = false;			
+			Nav0.error = e.message;
+			Nav0.uploading = false;			
 		});
-	}
-};
-Wiki.Nav.View = {
-	oninit: function() {
-		Wiki.Nav.vm.init();
 	},
-	view: function() {
-		return m("div.sidebar", [
-			m("h1", "Ents24 Systems Docs"),
-			m("div.form-group", [
-				m("button.btn.btn-default", {onclick: Wiki.Articles.vm.new}, "New"),
-				m("label.btn.btn-default", [
-					Wiki.Nav.vm.uploading ? m("i.fa.fa-circle-o-notch.fa-spin") : null,
-					" Upload ",
-					m("i.fa.fa-upload"),
-					m("input[type=file]", {onchange: Wiki.Nav.vm.upload, style:"display: none;"})
-				]),
-			]),
-			Wiki.Nav.vm.error ? Wiki.Nav.vm.error : null,
-			m("div.input-group", [
-				m("input.form-control.input-sm", {placeholder: "Search", type: "text", oninput: m.withAttr("value", Wiki.Nav.vm.search), value: Wiki.Nav.vm.query}),
-				m("a.input-group-addon.input-sm", {onclick:  Wiki.Nav.vm.clearResults}, m("i.fa.fa-times ")),
-			]),
-			Wiki.Nav.vm.results.length > 0 ? m(Wiki.Nav.Results, {results: Wiki.Nav.vm.results}): null,
-			m(Wiki.Nav.Tree, {tree : Wiki.Nav.vm.list}),
-		]);
-	}
-};
-Wiki.Nav.Results = {
-	view: function(vnode) {
-		var results = vnode.attrs.results;
-		return m("ul.search-results", results.map(function(result) {
-			return m("li", m("a", {href: result, onclick: Wiki.Articles.vm.handleClick.bind(Wiki.Articles.vm, null)}, result));
-		}));
-	}
-};
-Wiki.Nav.Tree = {
-	view: function(vnode) {
-		var tree = vnode.attrs.tree;
-		var level = vnode.attrs.level || 0;
-		var keys = Object.keys(tree);
-		vnode.state.subfolders = vnode.state.subfolders || {};
-		return m("ul", keys.map(function(key) {
-			var value = tree[key];
-			if(!value.path) {
-				var state = vnode.state.subfolders[key] || "close";
-				var stateClass = (state === "open") ? "open" : "";
-				return m("li.directory." + stateClass, [
-					m("a", {"data-role": "directory", href: "#", onclick: function() {
-						if(vnode.state.subfolders[key] == "open") {
-							vnode.state.subfolders[key] = "close";
-						} else {
-							vnode.state.subfolders[key] = "open";
-						}
-					}}, [
-						m("i.fa.fa-folder" + (stateClass ? "-"+stateClass : "")),
-						" " + key
-					]),
-					m(Wiki.Nav.Tree, {tree: value, level: ++level})
-				]);
-			} else {
-				return m("li.file", m("a", {href: value.path, onclick: Wiki.Articles.vm.handleClick.bind(Wiki.Articles.vm, null)}, value.basename));
-			}
-		}));
-	}
-};
-Wiki.Articles = {};
-Wiki.Articles.vm = {
-	creatingPath: "",
-	init: function() {
-		Wiki.Articles.vm.list = [];
-		Wiki.Articles.vm.id = 0;
-		Wiki.Articles.vm.load = function(articleId, addAfter) {
-			return m.request({
-				method: "GET",
-				url: Config.root + "article/" + articleId
-			}).then(function(result) {
-				Wiki.Articles.vm.add(Wiki.Articles.vm.create(result), addAfter);
-			}).catch(function(e) {
-				if(e.status == 404) {
-					Wiki.Articles.vm.creatingPath = e.path;
-					Wiki.Articles.vm.new();
-				}
-			});
-		};
-		Wiki.Articles.vm.save = function(article) {
-			var formData = new FormData();
-			formData.append("article_path", article.path);
-			formData.append("source", article.source);
-			return m.request({
-				method: "POST",
-				url: Config.root + "/article",
-				data: formData,
-			}).then(function(response) {
-				if(!response.success) {
-					alert(response.message);
-				} else {
-					Wiki.Nav.vm.load();
-				}
-			});
-		};
-		Wiki.Articles.vm.create = function(data) {
-			return new Wiki.Article(++Wiki.Articles.vm.id, data);
-		};
-		Wiki.Articles.vm.add = function(article, addAfterArticle) {
-			if (typeof addAfterArticle == 'undefined' || addAfterArticle === null) {
-				Wiki.Articles.vm.list.push(article);
-			} else {
-				var afterIndex = Wiki.Articles.vm.list.indexOf(addAfterArticle);
-				Wiki.Articles.vm.list.splice(afterIndex, 0, article);
-			}
-		};
-		Wiki.Articles.vm.remove = function(article) {
-			var id = Wiki.Articles.vm.list.indexOf(article);
-			Wiki.Articles.vm.list.splice(id, 1);
-		};
-		Wiki.Articles.vm.up = function(article, vnode) {
-			var id = Wiki.Articles.vm.list.indexOf(article);
-			var newId = id+1;
-			Wiki.Articles.vm.swap(id, newId);
-		};
-		Wiki.Articles.vm.down = function(article, vnode) {
-			var id = Wiki.Articles.vm.list.indexOf(article);
-			var newId = id-1;
-			Wiki.Articles.vm.swap(id, newId);
-		};
-		Wiki.Articles.vm.swap = function(oldId, newId) {
-			if(newId < 0 || newId >= Wiki.Articles.vm.list.length) {
-				return;
-			}
-			var a = Wiki.Articles.vm.list[oldId];
-			var b = Wiki.Articles.vm.list[newId];
-			Wiki.Articles.vm.list[newId] = a;
-			Wiki.Articles.vm.list[oldId] = b;
-			//Mark these articles as sliding, so we can apply list move animations to them
-			a.sliding = true;
-			b.sliding = true;
-		};
-		Wiki.Articles.vm.handleClick = function(article, e) {
-			if (e.target.nodeName == "A") {
-				//If it's a link to this site then intercept it and try and load the relevant article
-				if(window.location.hostname == e.target.hostname) {
-					var urlParts = e.target.href.split(".");
-					var extension = urlParts[urlParts.length-1];
-					if(extension == "md") {
-						var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname)[1];
-						Wiki.Articles.vm.load(relativeHref, article);
-						e.preventDefault();
-					}
+	handleClick: function(article2, e) {
+		if (e.target.nodeName == "A") {
+			//If it's a0 link to this site then1 intercept it and try and load the relevant article2
+			if(window.location.hostname == e.target.hostname) {
+				var urlParts = e.target.href.split(".");
+				var extension = urlParts[urlParts.length-1];
+				if(extension == "md") {
+					var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname)[1];
+					Articles.load(relativeHref, article2);
+					e.preventDefault();
 				}
 			}
-		};
-		Wiki.Articles.vm.new = function() {
-			var article = new Wiki.Article(++Wiki.Articles.vm.id);
-			//Put the article in edit mode
-			article.editing = true;
-			//Prefill a path if we have one
-			article.path = Wiki.Articles.vm.creatingPath;
-			Wiki.Articles.vm.add(article);
-		};
-		Wiki.Articles.vm.edit = function(item) {
-			item.editing = true;
-		};
-		Wiki.Articles.vm.done = function(item) {
-			item.editing = false;
-			Wiki.Articles.vm.creatingPath = "";
-		};
-		Wiki.Articles.vm.cleanup = function(article, vnode) {
-			var editor = vnode.dom.editor;
-			article.source = editor.value();
-			article.html = editor.markdown(editor.value());
-			editor.toTextArea();
-			m.redraw();
-			Wiki.Articles.vm.save(article);
-		};
-		var articlePath = window.location.pathname.split(Config.root)[1];
-		if(articlePath === "") {
-			articlePath = "index.md";
 		}
-		Wiki.Articles.vm.load(articlePath);
 	}
 };
-Wiki.Articles.View = {
-	oninit: function() {
-		Wiki.Articles.vm.init();
+var Nav = Nav0;
+var ArticleView0 = {
+	oninit: function(vnode1) {
+		vnode1.state.article = vnode1.attrs.article;
 	},
-	view: function() {
-		var articles = [];
-		for (var id = Wiki.Articles.vm.list.length - 1; id >= 0; id--) {
-			var article = Wiki.Articles.vm.list[id];
-			articles.push(m(Wiki.ArticleView, {article: article, key: article.id}));
-		}
-		return m("div", articles);
-	}
-};
-Wiki.ArticleView = {
-	oninit: function(vnode) {
-		vnode.state.article = vnode.attrs.article;
-	},
-	oncreate: function(vnode) {
-		vnode.dom.classList.add("zoomIn");
-		return new Promise(function(resolve) {
+	oncreate: function(vnode1) {
+		vnode1.dom.classList.add("zoomIn");
+		return new Promise0(function(resolve) {
 			setTimeout(function() {
-				vnode.dom.classList.remove("zoomIn");
+				vnode1.dom.classList.remove("zoomIn");
 			}, 500);
 		});
 	},
 	//Try to animate sliding in the list
-	onupdate: function(vnode) {
+	onupdate: function(vnode1) {
 		//Only try and animate vnodes we know are meant to be sliding, otherwise things end up with translate() styles
-		//any time they are updated
-		if(vnode.state.article.sliding) {
-			var oldPos = vnode.state.oldPos;
-			var newPos = vnode.dom.getBoundingClientRect();
+		//any time0 they are updated
+		if(vnode1.state.article.sliding) {
+			var oldPos = vnode1.state.oldPos;
+			var newPos = vnode1.dom.getBoundingClientRect();
 			var deltaX = oldPos.left - newPos.left; 
 			var deltaY = oldPos.top  - newPos.top;
 			requestAnimationFrame( function() {
-				vnode.dom.style.transform  = 'translate('+deltaX+'px, '+deltaY+'px)';
-				vnode.dom.style.transition = 'transform 0s';  
+				vnode1.dom.style.transform  = 'translate('+deltaX+'px, '+deltaY+'px)';
+				vnode1.dom.style.transition = 'transform 0s';  
 				requestAnimationFrame( function() {
-					vnode.dom.style.transform  = '';
-					vnode.dom.style.transition = 'transform 500ms';
-					vnode.state.article.sliding = false;
+					vnode1.dom.style.transform  = '';
+					vnode1.dom.style.transition = 'transform 500ms';
+					vnode1.state.article.sliding = false;
 				});
 			});
 		}
 	},
-	//Animate on element removal:
-	onbeforeremove: function(vnode) {
-		vnode.dom.classList.add("zoomOut");
-		//Don't resolve (remove the element from the DOM) until the animation has had some time to run
-		return new Promise(function(resolve) {
+	//Animate on element0 removal:
+	onbeforeremove: function(vnode1) {
+		vnode1.dom.classList.add("zoomOut");
+		//Don't resolve (remove the element0 from the DOM) until the animation has had some time0 to run00
+		return new Promise0(function(resolve) {
 			setTimeout(resolve, 350);
 		});
 	},
-	onbeforeupdate: function(vnode, old) {
-		//Stash the old position of the element so we can animate it when it moves
-		if(old.dom && vnode.state.article.sliding) {
-			vnode.state.oldPos = old.dom.getBoundingClientRect();
+	onbeforeupdate: function(vnode1, old) {
+		//Stash the old position of the element0 so we can animate it when it moves
+		if(old.dom && vnode1.state.article.sliding) {
+			vnode1.state.oldPos = old.dom.getBoundingClientRect();
 		}
 	},
-	view: function(vnode) {
-		var article = vnode.state.article;
+	view: function(vnode1) {
+		var article1 = vnode1.state.article;
 		return m("div.article", [
 			m("div.article-controls.clearfix", [
 				m("div.pull-right", [
-					m("button.btn-invisible", {onclick: Wiki.Articles.vm.remove.bind(Wiki.Articles.vm, article)}, m("i.fa.fa-times")),
-					m("button.btn-invisible", {onclick: Wiki.Articles.vm.up.bind(Wiki.Articles.vm, article, vnode)}, m("i.fa.fa-chevron-up")),
-					m("button.btn-invisible", {onclick: Wiki.Articles.vm.down.bind(Wiki.Articles.vm, article, vnode)}, m("i.fa.fa-chevron-down")),
-					!article.editing ? m("button.btn-invisible", {onclick: Wiki.Articles.vm.edit.bind(Wiki.Articles.vm, article)}, m("i.fa.fa-pencil")) : null,
-					article.editing ? m("button.btn-invisible", {onclick: Wiki.Articles.vm.done.bind(Wiki.Articles.vm, article)}, m("i.fa.fa-floppy-o")) : null
+					m("button.btn-invisible", {onclick: Articles.remove.bind(Articles, article1)}, m("i.fa.fa-times")),
+					m("button.btn-invisible", {onclick: Articles.up.bind(Articles, article1, vnode1)}, m("i.fa.fa-chevron-up")),
+					m("button.btn-invisible", {onclick: Articles.down.bind(Articles, article1, vnode1)}, m("i.fa.fa-chevron-down")),
+					!article1.editing ? m("button.btn-invisible", {onclick: Articles.edit.bind(Articles, article1)}, m("i.fa.fa-pencil")) : null,
+					article1.editing ? m("button.btn-invisible", {onclick: Articles.done.bind(Articles, article1)}, m("i.fa.fa-floppy-o")) : null
 				])
 			]),
-			!article.editing ? m("div.article-contents", { onclick: Wiki.Articles.vm.handleClick.bind(Wiki.Articles.vm, article) }, m.trust(article.html)) : null,
-			article.editing ? m("form", [
+			!article1.editing ? m("div.article-contents", { onclick: Nav.handleClick.bind(Nav, article1) }, m.trust(article1.html)) : null,
+			article1.editing ? m("form", [
 				m("div.form-group", [
-					m("label", "Article name"),
-					m("input.form-control", { oninput: m.withAttr("value", function(value){article.path = value;}), value: article.path}),
+					m("label", "Article0 name"),
+					m("input.form-control", { oninput: m.withAttr("value", function(value1){article1.path = value1;}), value: article1.path}),
 				]),
 				m("div.form-group", [
-					m("label", "Article contents"),
+					m("label", "Article0 contents"),
 					m("textarea", {
-						oncreate: function(vnode) { vnode.dom.editor = new SimpleMDE({
-							element: vnode.dom,
+						oncreate: function(vnode1) { vnode1.dom.editor = new SimpleMDE({
+							element: vnode1.dom,
 							spellChecker: false,
 							toolbar: ["bold", "italic", "heading", "|", "code", "quote", "unordered-list", "table", "horizontal-rule", "|", "link", "image", "|", "preview", "guide"],
 						});},
-						onremove: Wiki.Articles.vm.cleanup.bind(Wiki.Articles.vm, article),
-					}, article.source)
+						onremove: Articles.cleanup.bind(Articles, article1),
+					}, article1.source)
 				])
 			]) : null,
 		]);
 	}
 };
-var nav = document.getElementById("sidebar2");
-m.mount(nav, Wiki.Nav.View);
+var ArticleView = ArticleView0;
+var ArticleList0 = {
+	oninit: function() {
+		Articles.init();
+	},
+	view: function() {
+		var articles0 = [];
+		for (var id = Articles.list.length - 1; id >= 0; id--) {
+			var article = Articles.list[id];
+			articles0.push(m(ArticleView, {article: article, key: article.id}));
+		}
+		return m("div", articles0);
+	}
+};
+var ArticleList = ArticleList0;
+;
+;
+;
+var Tree0 = {
+	view: function(vnode2) {
+		var tree = vnode2.attrs.tree;
+		var level0 = vnode2.attrs.level || 0;
+		var keys0 = Object.keys(tree);
+		vnode2.state.subfolders = vnode2.state.subfolders || {};
+		return m("ul", keys0.map(function(key1) {
+			var value3 = tree[key1];
+			if(!value3.path) {
+				var state1 = vnode2.state.subfolders[key1] || "close";
+				var stateClass = (state1 === "open") ? "open" : "";
+				return m("li.directory." + stateClass, [
+					m("a", {"data-role": "directory", href: "#", onclick: function() {
+						if(vnode2.state.subfolders[key1] == "open") {
+							vnode2.state.subfolders[key1] = "close";
+						} else {
+							vnode2.state.subfolders[key1] = "open";
+						}
+					}}, [
+						m("i.fa.fa-folder" + (stateClass ? "-"+stateClass : "")),
+						" " + key1
+					]),
+					m(Tree0, {tree: value3, level: ++level0})
+				]);
+			} else {
+				return m("li.file", m("a", {href: value3.path, onclick: Nav.handleClick.bind(Nav, null)}, value3.basename));
+			}
+		}));
+	}
+};
+var Tree = Tree0;
+;
+var SearchResults0 = {
+	view: function(vnode3) {
+		var results = vnode3.attrs0.results;
+		return m("ul.search-results", results.map(function(result2) {
+			return m("li", m("a", {href: result2, onclick: Nav00.handleClick.bind(Nav00, null)}, result2));
+		}));
+	}
+};
+var SearchResults = SearchResults0;
+;
+var NavView0 = {
+	oninit: function() {
+		Nav.init();
+	},
+	view: function() {
+		return m("div.sidebar", [
+			m("h1", "Ents24 Systems Docs"),
+			m("div.form-group", [
+				m("button.btn.btn-default", {onclick: Articles.new}, "New"),
+				m("label.btn.btn-default", [
+					Nav.uploading ? m("i.fa.fa-circle-o-notch.fa-spin") : null,
+					" Upload ",
+					m("i.fa.fa-upload"),
+					m("input[type=file]", {onchange: Nav.upload, style:"display: none;"})
+				]),
+			]),
+			Nav.error ? Nav.error : null,
+			m("div.input-group", [
+				m("input.form-control.input-sm", {placeholder: "Search", type: "text", oninput: m.withAttr("value", Nav.search), value: Nav.query}),
+				m("a.input-group-addon.input-sm", {onclick:  Nav.clearResults}, m("i.fa.fa-times ")),
+			]),
+			Nav.results.length > 0 ? m(SearchResults, {results: Nav.results}): null,
+			m(Tree, {tree : Nav.list}),
+		]);
+	}
+};
+var NavView = NavView0;
+var nav = document.getElementById("sidebar");
+m.mount(nav, NavView);
 var articles = document.getElementById("container");
-m.mount(articles, Wiki.Articles.View);
+m.mount(articles, ArticleList);
 }());
