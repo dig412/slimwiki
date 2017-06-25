@@ -5,8 +5,6 @@ use League\Flysystem\Filesystem;
 use League\Flysystem\Adapter\Local;
 
 include __DIR__ . "/../vendor/autoload.php";
-include __DIR__ . "/../src/ListTree.php";
-include __DIR__ . "/../src/ParsedownLinkTarget.php";
 
 $config = [
 	'settings' => [
@@ -20,17 +18,17 @@ $container = $app->getContainer();
 $container['library'] = function ($container) {
 	$adapter = new Local(__DIR__.'/../library');
 	$filesystem = new Filesystem($adapter);
-	$filesystem->addPlugin(new ListTree);
+	$filesystem->addPlugin(new SlimWiki\ListTree);
 	return $filesystem;
 };
 $container['uploads'] = function ($container) {
 	$adapter  = new Local(__DIR__.'/../public/uploads');
 	$filesystem = new Filesystem($adapter);
-	$filesystem->addPlugin(new ListTree);
+	$filesystem->addPlugin(new SlimWiki\ListTree);
 	return $filesystem;
 };
 $container['markdown'] = function ($container) {
-	$markdown = new \ParsedownLinkTarget($adapter);
+	$markdown = new SlimWiki\ParsedownLinkTarget($adapter);
 	return $markdown;
 };
 $container['view'] = new \Slim\Views\PhpRenderer(__DIR__ . "/../templates/");
@@ -155,7 +153,7 @@ $app->post('/upload', function (Request $request, Response $response) {
 
 $app->get('/[{article_path:.*}]', function (Request $request, Response $response) {
 
-	$scriptDirectory = dirname($_SERVER['SCRIPT_NAME']);
+	$scriptDirectory = rtrim(str_replace("\\", "/", dirname($_SERVER['SCRIPT_NAME'])), "/");
 	$response = $this->view->render($response, "index.phtml", ["root" => $scriptDirectory]);
 	return $response;
 });

@@ -1,4 +1,8 @@
 <?php
+namespace SlimWiki;
+
+use Parsedown;
+
 /**
  * Adds "target=_blank" to any urls or links that have a host component - i.e. they point to another site
  */

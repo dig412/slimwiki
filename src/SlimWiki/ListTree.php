@@ -1,4 +1,6 @@
 <?php
+namespace SlimWiki;
+
 use League\Flysystem\Plugin\AbstractPlugin;
 
 class ListTree extends AbstractPlugin
