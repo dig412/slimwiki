@@ -1,13 +1,15 @@
 {
   "dependencies": {
     "mithril": "^1.1.1",
-    "node-sass": "^4.5.3"
+    "node-sass": "^4.5.3",
+    "parallelshell": "^3.0.1"
   },
   "scripts": {
     "build-js": "bundle src/index.js --output public/js/app.js",
-    "build-css": "node-sass src/main.scss public/css/main.css",
     "watch-js": "bundle src/index.js --output public/js/app.js --watch",
-    "watch-css": "node-sass src/main.scss public/css/main.css -w",
+    "build-css": "node-sass src/scss/main.scss public/css/main.css",
+    "watch-css": "node-sass src/scss/main.scss public/css/main.css -w",
+    "watch": "parallelshell \"npm run watch-js\" \"npm run watch-css\"",
     "build": "npm run build-js && npm run build-css"
   }
 }
