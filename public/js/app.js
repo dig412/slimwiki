@@ -2070,6 +2070,10 @@ var ArticleView = {
 	oncreate: function(vnode) {
 		vnode.dom.classList.add("zoomIn");
 
+		setTimeout(function() { 
+			zenscroll.intoView(vnode.dom);
+		}, 400);
+
 		return new Promise(function(resolve) {
 			setTimeout(function() {
 				vnode.dom.classList.remove("zoomIn");
