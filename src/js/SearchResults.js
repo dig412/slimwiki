@@ -1,4 +1,5 @@
 var m = require("mithril");
+var Nav = require("./Nav");
 
 var SearchResults = {
 	view: function(vnode) {

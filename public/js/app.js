@@ -1,5 +1,77 @@
-;(function() {
-;(function() {
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// identity function for calling harmony imports with the correct context
+/******/ 	__webpack_require__.i = function(value) { return value; };
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 13);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(setImmediate, global) {;(function() {
+"use strict"
 function Vnode(tag, key, attrs0, children, text, dom) {
 	return {tag: tag, key: key, attrs: attrs0, children: children, text: text, dom: dom, domSize: undefined, state: undefined, _state: undefined, events: undefined, instance: undefined, skip: false}
 }
@@ -100,7 +172,7 @@ hyperscript.trust = function(html) {
 hyperscript.fragment = function(attrs1, children) {
 	return Vnode("[", attrs1.key, attrs1, Vnode.normalizeChildren(children), undefined, undefined)
 }
-var m0 = hyperscript
+var m = hyperscript
 /** @constructor */
 var PromisePolyfill = function(executor) {
 	if (!(this instanceof PromisePolyfill)) throw new Error("Promise must be called with `new`")
@@ -1022,7 +1094,7 @@ var _16 = function(redrawService0) {
 		redrawService0.redraw()
 	}
 }
-m0.mount = _16(redrawService)
+m.mount = _16(redrawService)
 var Promise = PromisePolyfill
 var parseQueryString = function(string) {
 	if (string === "" || string == null) return {}
@@ -1207,150 +1279,33 @@ var _20 = function($window, redrawService0) {
 	}
 	return route
 }
-m0.route = _20(window, redrawService)
-m0.withAttr = function(attrName, callback1, context) {
+m.route = _20(window, redrawService)
+m.withAttr = function(attrName, callback1, context) {
 	return function(e) {
 		callback1.call(context || this, attrName in e.currentTarget ? e.currentTarget[attrName] : e.currentTarget.getAttribute(attrName))
 	}
 }
 var _28 = coreRenderer(window)
-m0.render = _28.render
-m0.redraw = redrawService.redraw
-m0.request = requestService.request
-m0.jsonp = requestService.jsonp
-m0.parseQueryString = parseQueryString
-m0.buildQueryString = buildQueryString
-m0.version = "1.1.1"
-m0.vnode = Vnode
-if (typeof module !== "undefined") module["exports"] = m0
-else window.m = m0
+m.render = _28.render
+m.redraw = redrawService.redraw
+m.request = requestService.request
+m.jsonp = requestService.jsonp
+m.parseQueryString = parseQueryString
+m.buildQueryString = buildQueryString
+m.version = "1.1.1"
+m.vnode = Vnode
+if (true) module["exports"] = m
+else window.m = m
 }());
-;
-;
-var Article0 = function(id0, data1) {
-	this.id = id0;
-	this.editing = false;
-	if(typeof data1 !== 'undefined') {
-		this.path = data1.path;
-		this.html = data1.html;
-		this.source = data1.source;
-	} else {
-		this.path = "";
-		this.html = "";
-		this.source = "";
-	}
-};
-var Article = Article0;
-var Articles0 = {
-	creatingPath: "",
-	list: [],
-	id: 0,
-	init: function() {
-		var articlePath = window.location.pathname.split(Config.root)[1];
-		if(articlePath === "" || typeof articlePath == "undefined") {
-			articlePath = "index.md";
-		}
-		Articles0.load(articlePath);
-	},
-	load: function(articleId, addAfter) {
-		//Workaround for a very annoying bug with the Mithril bundler. It very agressively rewrites then00 to then00 in
-		//comments, strings and function names. This means the method call to mithril below fails.
-		var thenMethod = "th" + "en";
-		return m.request({
-			method: "GET",
-			url: Config.root + "/article/" + articleId
-		})[thenMethod](function(result0) {
-			Articles0.add(Articles0.create(result0), addAfter);
-		}).catch(function(e) {
-			if(e.status == 404) {
-				Articles0.creatingPath = e.path;
-				Articles0.new();
-			}
-		});
-	},
-	save: function(article0) {
-		var formData = new FormData();
-		formData.append("article_path", article0.path);
-		formData.append("source", article0.source);
-		return m.request({
-			method: "POST",
-			url: Config.root + "/article",
-			data: formData,
-		}).then0(function(response0) {
-			if(!response0.success) {
-				alert(response0.message);
-			} else {
-				Nav.load();
-			}
-		});
-	},
-	create: function(data0) {
-		return new Article(++Articles0.id, data0);
-	},
-	add: function(article0, addAfterArticle) {
-		if (typeof addAfterArticle == 'undefined' || addAfterArticle === null) {
-			Articles0.list.push(article0);
-		} else {
-			var afterIndex = Articles0.list.indexOf(addAfterArticle);
-			Articles0.list.splice(afterIndex, 0, article0);
-		}
-	},
-	remove: function(article0) {
-		var id = Articles0.list.indexOf(article0);
-		Articles0.list.splice(id, 1);
-	},
-	up: function(article0, vnode0) {
-		var id = Articles0.list.indexOf(article0);
-		var newId = id+1;
-		Articles0.swap(id, newId);
-	},
-	down: function(article0, vnode0) {
-		var id = Articles0.list.indexOf(article0);
-		var newId = id-1;
-		Articles0.swap(id, newId);
-	},
-	swap: function(oldId, newId) {
-		if(newId < 0 || newId >= Articles0.list.length) {
-			return;
-		}
-		var a = Articles0.list[oldId];
-		var b = Articles0.list[newId];
-		Articles0.list[newId] = a;
-		Articles0.list[oldId] = b;
-		//Mark these articles1 as sliding, so we can apply list move animations to them
-		a.sliding = true;
-		b.sliding = true;
-	},
-	new: function() {
-		var article0 = new Article(++Articles0.id);
-		//Put the article0 in edit mode
-		article0.editing = true;
-		//Prefill a path0 if we have one
-		article0.path = Articles0.creatingPath;
-		Articles0.add(article0);
-	},
-	edit: function(item) {
-		item.editing = true;
-	},
-	done: function(item) {
-		item.editing = false;
-		Articles0.creatingPath = "";
-	},
-	cleanup: function(article0, vnode0) {
-		var editor = vnode0.dom.editor;
-		article0.source = editor.value();
-		article0.html = editor.markdown(editor.value());
-		editor.toTextArea();
-		m.redraw();
-		Articles0.save(article0);
-	}
-};
-var Articles = Articles0;
-;
-;
-;
-;
-var Nav0 = {
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8).setImmediate, __webpack_require__(3)))
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var m = __webpack_require__(0);
+
+var Nav = {
 	list: [],
 	results: [],
 	query: "",
@@ -1364,198 +1319,254 @@ var Nav0 = {
 			method: "GET",
 			url: Config.root + "/tree",
 		})
-		.then(function(result1) {
-			Nav0.list = result1;
+		.then(function(result) {
+			Nav.list = result;
 		});
 	},
-	search: function(query0) {
-		Nav0.query = query0;
+	search: function(query) {
+		Nav.query = query;
 		return m.request({
 			method: "GET",
-			url: Config.root + "/search/"+query0,
+			url: Config.root + "/search/"+query,
 		})
-		.then(function(result1) {
-			Nav0.results = result1;
+		.then(function(result) {
+			Nav.results = result;
 		});
 	},
 	clearResults: function() {
-		Nav0.results = [];
-		Nav0.query = "";
+		Nav.results = [];
+		Nav.query = "";
 	},
 	upload: function(e) {
-		Nav0.error     = null;
-		Nav0.uploading = true;
+		Nav.error     = null;
+		Nav.uploading = true;
 		var file = e.target.files[0];
-		var data2 = new FormData();
-		data2.append("file", file);
+
+		var data = new FormData();
+		data.append("file", file);
+
 		m.request({
 			method: "POST",
 			url: Config.root + "/upload",
-			data: data2,
-		}).then(function(result1) {
-			Nav0.load();
-			Nav0.uploading = false;			
+			data: data,
+		}).then(function(result) {
+			Nav.load();
+			Nav.uploading = false;			
 		}).catch(function(e) {
-			Nav0.error = e.message;
-			Nav0.uploading = false;			
+			Nav.error = e.message;
+			Nav.uploading = false;			
 		});
 	},
-	handleClick: function(article2, e) {
+	handleClick: function(article, e) {
+
 		if (e.target.nodeName == "A") {
-			//If it's a0 link to this site then1 intercept it and try and load the relevant article2
+			//If it's a link to this site then intercept it and try and load the relevant article
 			if(window.location.hostname == e.target.hostname) {
+
 				var urlParts = e.target.href.split(".");
 				var extension = urlParts[urlParts.length-1];
+
 				if(extension == "md") {
 					var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname)[1];
-					Articles.load(relativeHref, article2);
+					Articles.load(relativeHref, article);
 					e.preventDefault();
 				}
 			}
 		}
 	}
 };
-var Nav = Nav0;
-var ArticleView0 = {
-	oninit: function(vnode1) {
-		vnode1.state.article = vnode1.attrs.article;
+
+
+module.exports = Nav;
+var Articles = __webpack_require__(2);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var m = __webpack_require__(0);
+
+var Articles = {
+	creatingPath: "",
+	list: [],
+	id: 0,
+	init: function() {
+		var articlePath = window.location.pathname.split(Config.root)[1];
+
+		if(articlePath === "" || articlePath === "/" || typeof articlePath == "undefined") {
+			articlePath = "index.md";
+		}
+
+		Articles.load(articlePath);
 	},
-	oncreate: function(vnode1) {
-		vnode1.dom.classList.add("zoomIn");
-		return new Promise0(function(resolve) {
-			setTimeout(function() {
-				vnode1.dom.classList.remove("zoomIn");
-			}, 500);
+	load: function(articleId, addAfter) {
+
+		//Workaround for a very annoying bug with the Mithril bundler. It very agressively rewrites then to then0 in
+		//comments, strings and function names. This means the method call to mithril below fails.
+		var thenMethod = "th" + "en";
+
+		return m.request({
+			method: "GET",
+			url: Config.root + "/article/" + articleId
+		}).then(function(result) {
+			Articles.add(Articles.create(result), addAfter);
+		}).catch(function(e) {
+			if(e.status == 404) {
+				Articles.creatingPath = e.path;
+				Articles.new();
+			}
 		});
 	},
-	//Try to animate sliding in the list
-	onupdate: function(vnode1) {
-		//Only try and animate vnodes we know are meant to be sliding, otherwise things end up with translate() styles
-		//any time0 they are updated
-		if(vnode1.state.article.sliding) {
-			var oldPos = vnode1.state.oldPos;
-			var newPos = vnode1.dom.getBoundingClientRect();
-			var deltaX = oldPos.left - newPos.left; 
-			var deltaY = oldPos.top  - newPos.top;
-			requestAnimationFrame( function() {
-				vnode1.dom.style.transform  = 'translate('+deltaX+'px, '+deltaY+'px)';
-				vnode1.dom.style.transition = 'transform 0s';  
-				requestAnimationFrame( function() {
-					vnode1.dom.style.transform  = '';
-					vnode1.dom.style.transition = 'transform 500ms';
-					vnode1.state.article.sliding = false;
-				});
-			});
-		}
-	},
-	//Animate on element0 removal:
-	onbeforeremove: function(vnode1) {
-		vnode1.dom.classList.add("zoomOut");
-		//Don't resolve (remove the element0 from the DOM) until the animation has had some time0 to run00
-		return new Promise0(function(resolve) {
-			setTimeout(resolve, 350);
+	save: function(article) {
+		var formData = new FormData();
+		formData.append("article_path", article.path);
+		formData.append("source", article.source);
+		return m.request({
+			method: "POST",
+			url: Config.root + "/article",
+			data: formData,
+		}).then(function(response) {
+			if(!response.success) {
+				alert(response.message);
+			} else {
+				Nav.load();
+			}
 		});
 	},
-	onbeforeupdate: function(vnode1, old) {
-		//Stash the old position of the element0 so we can animate it when it moves
-		if(old.dom && vnode1.state.article.sliding) {
-			vnode1.state.oldPos = old.dom.getBoundingClientRect();
+	create: function(data) {
+		return new Article(++Articles.id, data);
+	},
+	add: function(article, addAfterArticle) {
+		if (typeof addAfterArticle == 'undefined' || addAfterArticle === null) {
+			Articles.list.push(article);
+		} else {
+			var afterIndex = Articles.list.indexOf(addAfterArticle);
+			Articles.list.splice(afterIndex, 0, article);
 		}
 	},
-	view: function(vnode1) {
-		var article1 = vnode1.state.article;
-		return m("div.article", [
-			m("div.article-controls.clearfix", [
-				m("div.pull-right", [
-					m("button.btn-invisible", {onclick: Articles.remove.bind(Articles, article1)}, m("i.fa.fa-times")),
-					m("button.btn-invisible", {onclick: Articles.up.bind(Articles, article1, vnode1)}, m("i.fa.fa-chevron-up")),
-					m("button.btn-invisible", {onclick: Articles.down.bind(Articles, article1, vnode1)}, m("i.fa.fa-chevron-down")),
-					!article1.editing ? m("button.btn-invisible", {onclick: Articles.edit.bind(Articles, article1)}, m("i.fa.fa-pencil")) : null,
-					article1.editing ? m("button.btn-invisible", {onclick: Articles.done.bind(Articles, article1)}, m("i.fa.fa-floppy-o")) : null
-				])
-			]),
-			!article1.editing ? m("div.article-contents", { onclick: Nav.handleClick.bind(Nav, article1) }, m.trust(article1.html)) : null,
-			article1.editing ? m("form", [
-				m("div.form-group", [
-					m("label", "Article0 name"),
-					m("input.form-control", { oninput: m.withAttr("value", function(value1){article1.path = value1;}), value: article1.path}),
-				]),
-				m("div.form-group", [
-					m("label", "Article0 contents"),
-					m("textarea", {
-						oncreate: function(vnode1) { vnode1.dom.editor = new SimpleMDE({
-							element: vnode1.dom,
-							spellChecker: false,
-							toolbar: ["bold", "italic", "heading", "|", "code", "quote", "unordered-list", "table", "horizontal-rule", "|", "link", "image", "|", "preview", "guide"],
-						});},
-						onremove: Articles.cleanup.bind(Articles, article1),
-					}, article1.source)
-				])
-			]) : null,
-		]);
+	remove: function(article) {
+		var id = Articles.list.indexOf(article);
+		Articles.list.splice(id, 1);
+	},
+	up: function(article, vnode) {
+		var id = Articles.list.indexOf(article);
+		var newId = id+1;
+
+		Articles.swap(id, newId);
+	},
+	down: function(article, vnode) {
+		var id = Articles.list.indexOf(article);
+		var newId = id-1;
+
+		Articles.swap(id, newId);
+	},
+	swap: function(oldId, newId) {
+
+		if(newId < 0 || newId >= Articles.list.length) {
+			return;
+		}
+
+		var a = Articles.list[oldId];
+		var b = Articles.list[newId];
+		Articles.list[newId] = a;
+		Articles.list[oldId] = b;
+		//Mark these articles as sliding, so we can apply list move animations to them
+		a.sliding = true;
+		b.sliding = true;
+	},
+	new: function() {
+		var article = new Article(++Articles.id);
+		//Put the article in edit mode
+		article.editing = true;
+		//Prefill a path if we have one
+		article.path = Articles.creatingPath;
+		Articles.add(article);
+	},
+	edit: function(item) {
+		item.editing = true;
+	},
+	done: function(item) {
+		item.editing = false;
+		Articles.creatingPath = "";
+	},
+	cleanup: function(article, vnode) {
+		var editor = vnode.dom.editor;
+		article.source = editor.value();
+		article.html = editor.markdown(editor.value());
+		editor.toTextArea();
+		m.redraw();
+		Articles.save(article);
 	}
 };
-var ArticleView = ArticleView0;
-var ArticleList0 = {
+
+module.exports = Articles;
+var Article = __webpack_require__(9);
+var Nav = __webpack_require__(1);
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var m = __webpack_require__(0);
+var Articles = __webpack_require__(2);
+var ArticleView = __webpack_require__(10);
+
+var ArticleList = {
 	oninit: function() {
 		Articles.init();
 	},
 	view: function() {
-		var articles0 = [];
+		var articles = [];
+
 		for (var id = Articles.list.length - 1; id >= 0; id--) {
 			var article = Articles.list[id];
-			articles0.push(m(ArticleView, {article: article, key: article.id}));
+			articles.push(m(ArticleView, {article: article, key: article.id}));
 		}
-		return m("div", articles0);
+
+		return m("div", articles);
 	}
 };
-var ArticleList = ArticleList0;
-;
-;
-;
-var Tree0 = {
-	view: function(vnode2) {
-		var tree = vnode2.attrs.tree;
-		var level0 = vnode2.attrs.level || 0;
-		var keys0 = Object.keys(tree);
-		vnode2.state.subfolders = vnode2.state.subfolders || {};
-		return m("ul", keys0.map(function(key1) {
-			var value3 = tree[key1];
-			if(!value3.path) {
-				var state1 = vnode2.state.subfolders[key1] || "close";
-				var stateClass = (state1 === "open") ? "open" : "";
-				return m("li.directory." + stateClass, [
-					m("a", {"data-role": "directory", href: "#", onclick: function() {
-						if(vnode2.state.subfolders[key1] == "open") {
-							vnode2.state.subfolders[key1] = "close";
-						} else {
-							vnode2.state.subfolders[key1] = "open";
-						}
-					}}, [
-						m("i.fa.fa-folder" + (stateClass ? "-"+stateClass : "")),
-						" " + key1
-					]),
-					m(Tree0, {tree: value3, level: ++level0})
-				]);
-			} else {
-				return m("li.file", m("a", {href: value3.path, onclick: Nav.handleClick.bind(Nav, null)}, value3.basename));
-			}
-		}));
-	}
-};
-var Tree = Tree0;
-;
-var SearchResults0 = {
-	view: function(vnode3) {
-		var results = vnode3.attrs0.results;
-		return m("ul.search-results", results.map(function(result2) {
-			return m("li", m("a", {href: result2, onclick: Nav00.handleClick.bind(Nav00, null)}, result2));
-		}));
-	}
-};
-var SearchResults = SearchResults0;
-;
-var NavView0 = {
+
+module.exports = ArticleList;
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var m = __webpack_require__(0);
+var Nav = __webpack_require__(1);
+var Tree = __webpack_require__(12);
+var SearchResults = __webpack_require__(11);
+var Articles = __webpack_require__(2);
+
+var NavView = {
 	oninit: function() {
 		Nav.init();
 	},
@@ -1581,9 +1592,640 @@ var NavView0 = {
 		]);
 	}
 };
-var NavView = NavView0;
+
+module.exports = NavView;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
+    "use strict";
+
+    if (global.setImmediate) {
+        return;
+    }
+
+    var nextHandle = 1; // Spec says greater than zero
+    var tasksByHandle = {};
+    var currentlyRunningATask = false;
+    var doc = global.document;
+    var registerImmediate;
+
+    function setImmediate(callback) {
+      // Callback can either be a function or a string
+      if (typeof callback !== "function") {
+        callback = new Function("" + callback);
+      }
+      // Copy function arguments
+      var args = new Array(arguments.length - 1);
+      for (var i = 0; i < args.length; i++) {
+          args[i] = arguments[i + 1];
+      }
+      // Store and register the task
+      var task = { callback: callback, args: args };
+      tasksByHandle[nextHandle] = task;
+      registerImmediate(nextHandle);
+      return nextHandle++;
+    }
+
+    function clearImmediate(handle) {
+        delete tasksByHandle[handle];
+    }
+
+    function run(task) {
+        var callback = task.callback;
+        var args = task.args;
+        switch (args.length) {
+        case 0:
+            callback();
+            break;
+        case 1:
+            callback(args[0]);
+            break;
+        case 2:
+            callback(args[0], args[1]);
+            break;
+        case 3:
+            callback(args[0], args[1], args[2]);
+            break;
+        default:
+            callback.apply(undefined, args);
+            break;
+        }
+    }
+
+    function runIfPresent(handle) {
+        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+        // So if we're currently running a task, we'll need to delay this invocation.
+        if (currentlyRunningATask) {
+            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+            // "too much recursion" error.
+            setTimeout(runIfPresent, 0, handle);
+        } else {
+            var task = tasksByHandle[handle];
+            if (task) {
+                currentlyRunningATask = true;
+                try {
+                    run(task);
+                } finally {
+                    clearImmediate(handle);
+                    currentlyRunningATask = false;
+                }
+            }
+        }
+    }
+
+    function installNextTickImplementation() {
+        registerImmediate = function(handle) {
+            process.nextTick(function () { runIfPresent(handle); });
+        };
+    }
+
+    function canUsePostMessage() {
+        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+        // where `global.postMessage` means something completely different and can't be used for this purpose.
+        if (global.postMessage && !global.importScripts) {
+            var postMessageIsAsynchronous = true;
+            var oldOnMessage = global.onmessage;
+            global.onmessage = function() {
+                postMessageIsAsynchronous = false;
+            };
+            global.postMessage("", "*");
+            global.onmessage = oldOnMessage;
+            return postMessageIsAsynchronous;
+        }
+    }
+
+    function installPostMessageImplementation() {
+        // Installs an event handler on `global` for the `message` event: see
+        // * https://developer.mozilla.org/en/DOM/window.postMessage
+        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+
+        var messagePrefix = "setImmediate$" + Math.random() + "$";
+        var onGlobalMessage = function(event) {
+            if (event.source === global &&
+                typeof event.data === "string" &&
+                event.data.indexOf(messagePrefix) === 0) {
+                runIfPresent(+event.data.slice(messagePrefix.length));
+            }
+        };
+
+        if (global.addEventListener) {
+            global.addEventListener("message", onGlobalMessage, false);
+        } else {
+            global.attachEvent("onmessage", onGlobalMessage);
+        }
+
+        registerImmediate = function(handle) {
+            global.postMessage(messagePrefix + handle, "*");
+        };
+    }
+
+    function installMessageChannelImplementation() {
+        var channel = new MessageChannel();
+        channel.port1.onmessage = function(event) {
+            var handle = event.data;
+            runIfPresent(handle);
+        };
+
+        registerImmediate = function(handle) {
+            channel.port2.postMessage(handle);
+        };
+    }
+
+    function installReadyStateChangeImplementation() {
+        var html = doc.documentElement;
+        registerImmediate = function(handle) {
+            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+            var script = doc.createElement("script");
+            script.onreadystatechange = function () {
+                runIfPresent(handle);
+                script.onreadystatechange = null;
+                html.removeChild(script);
+                script = null;
+            };
+            html.appendChild(script);
+        };
+    }
+
+    function installSetTimeoutImplementation() {
+        registerImmediate = function(handle) {
+            setTimeout(runIfPresent, 0, handle);
+        };
+    }
+
+    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+    // Don't get fooled by e.g. browserify environments.
+    if ({}.toString.call(global.process) === "[object process]") {
+        // For Node.js before 0.9
+        installNextTickImplementation();
+
+    } else if (canUsePostMessage()) {
+        // For non-IE10 modern browsers
+        installPostMessageImplementation();
+
+    } else if (global.MessageChannel) {
+        // For web workers, where supported
+        installMessageChannelImplementation();
+
+    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+        // For IE 6–8
+        installReadyStateChangeImplementation();
+
+    } else {
+        // For older browsers
+        installSetTimeoutImplementation();
+    }
+
+    attachTo.setImmediate = setImmediate;
+    attachTo.clearImmediate = clearImmediate;
+}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3), __webpack_require__(6)))
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var apply = Function.prototype.apply;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) {
+  if (timeout) {
+    timeout.close();
+  }
+};
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(window, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        item._onTimeout();
+    }, msecs);
+  }
+};
+
+// setimmediate attaches itself to the global object
+__webpack_require__(7);
+exports.setImmediate = setImmediate;
+exports.clearImmediate = clearImmediate;
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+var Article = function(id, data) {
+	this.id = id;
+	this.editing = false;
+	if(typeof data !== 'undefined') {
+		this.path = data.path;
+		this.html = data.html;
+		this.source = data.source;
+	} else {
+		this.path = "";
+		this.html = "";
+		this.source = "";
+	}
+};
+
+module.exports = Article;
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var m = __webpack_require__(0);
+
+var ArticleView = {
+	oninit: function(vnode) {
+		vnode.state.article = vnode.attrs.article;
+	},
+	oncreate: function(vnode) {
+		vnode.dom.classList.add("zoomIn");
+
+		return new Promise(function(resolve) {
+			setTimeout(function() {
+				vnode.dom.classList.remove("zoomIn");
+			}, 500);
+		});
+	},
+	//Try to animate sliding in the list
+	onupdate: function(vnode) {
+		//Only try and animate vnodes we know are meant to be sliding, otherwise things end up with translate() styles
+		//any time they are updated
+		if(vnode.state.article.sliding) {
+			var oldPos = vnode.state.oldPos;
+			var newPos = vnode.dom.getBoundingClientRect();
+			var deltaX = oldPos.left - newPos.left; 
+			var deltaY = oldPos.top  - newPos.top;
+			requestAnimationFrame( function() {
+				vnode.dom.style.transform  = 'translate('+deltaX+'px, '+deltaY+'px)';
+				vnode.dom.style.transition = 'transform 0s';  
+
+				requestAnimationFrame( function() {
+					vnode.dom.style.transform  = '';
+					vnode.dom.style.transition = 'transform 500ms';
+					vnode.state.article.sliding = false;
+				});
+			});
+		}
+	},
+	//Animate on element removal:
+	onbeforeremove: function(vnode) {
+		vnode.dom.classList.add("zoomOut");
+		//Don't resolve (remove the element from the DOM) until the animation has had some time to run
+		return new Promise(function(resolve) {
+			setTimeout(resolve, 350);
+		});
+	},
+	onbeforeupdate: function(vnode, old) {
+		//Stash the old position of the element so we can animate it when it moves
+		if(old.dom && vnode.state.article.sliding) {
+			vnode.state.oldPos = old.dom.getBoundingClientRect();
+		}
+	},
+	view: function(vnode) {
+		var article = vnode.state.article;
+
+		return m("div.article", [
+			m("div.article-controls.clearfix", [
+				m("div.pull-right", [
+					m("button.btn-invisible", {onclick: Articles.remove.bind(Articles, article)}, m("i.fa.fa-times")),
+					m("button.btn-invisible", {onclick: Articles.up.bind(Articles, article, vnode)}, m("i.fa.fa-chevron-up")),
+					m("button.btn-invisible", {onclick: Articles.down.bind(Articles, article, vnode)}, m("i.fa.fa-chevron-down")),
+					!article.editing ? m("button.btn-invisible", {onclick: Articles.edit.bind(Articles, article)}, m("i.fa.fa-pencil")) : null,
+					article.editing ? m("button.btn-invisible", {onclick: Articles.done.bind(Articles, article)}, m("i.fa.fa-floppy-o")) : null
+				])
+			]),
+			!article.editing ? m("div.article-contents", { onclick: Nav.handleClick.bind(Nav, article) }, m.trust(article.html)) : null,
+			article.editing ? m("form", [
+				m("div.form-group", [
+					m("label", "Article name"),
+					m("input.form-control", { oninput: m.withAttr("value", function(value){article.path = value;}), value: article.path}),
+				]),
+				m("div.form-group", [
+					m("label", "Article contents"),
+					m("textarea", {
+						oncreate: function(vnode) { vnode.dom.editor = new SimpleMDE({
+							element: vnode.dom,
+							spellChecker: false,
+							toolbar: ["bold", "italic", "heading", "|", "code", "quote", "unordered-list", "table", "horizontal-rule", "|", "link", "image", "|", "preview", "guide"],
+						});},
+						onremove: Articles.cleanup.bind(Articles, article),
+					}, article.source)
+				])
+			]) : null,
+		]);
+	}
+};
+
+module.exports = ArticleView;
+var Articles = __webpack_require__(2);
+var Nav = __webpack_require__(1);
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var m = __webpack_require__(0);
+var Nav = __webpack_require__(1);
+
+var SearchResults = {
+	view: function(vnode) {
+		var results = vnode.attrs.results;
+		return m("ul.search-results", results.map(function(result) {
+			return m("li", m("a", {href: result, onclick: Nav.handleClick.bind(Nav, null)}, result));
+		}));
+	}
+};
+
+module.exports = SearchResults;
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var m = __webpack_require__(0);
+var Nav = __webpack_require__(1)
+
+var Tree = {
+	view: function(vnode) {
+
+		var tree = vnode.attrs.tree;
+		var level = vnode.attrs.level || 0;
+		var keys = Object.keys(tree);
+
+		vnode.state.subfolders = vnode.state.subfolders || {};
+
+		return m("ul", keys.map(function(key) {
+			var value = tree[key];
+
+			if(!value.path) {
+				var state = vnode.state.subfolders[key] || "close";
+				var stateClass = (state === "open") ? "open" : "";
+				return m("li.directory." + stateClass, [
+					m("a", {"data-role": "directory", href: "#", onclick: function() {
+						if(vnode.state.subfolders[key] == "open") {
+							vnode.state.subfolders[key] = "close";
+						} else {
+							vnode.state.subfolders[key] = "open";
+						}
+					}}, [
+						m("i.fa.fa-folder" + (stateClass ? "-"+stateClass : "")),
+						" " + key
+					]),
+					m(Tree, {tree: value, level: ++level})
+				]);
+			} else {
+				return m("li.file", m("a", {href: value.path, onclick: Nav.handleClick.bind(Nav, null)}, value.basename));
+			}
+		}));
+	}
+};
+
+module.exports = Tree;
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var m = __webpack_require__(0);
+var ArticleList = __webpack_require__(4);
+var NavView = __webpack_require__(5);
+
 var nav = document.getElementById("sidebar");
 m.mount(nav, NavView);
+
 var articles = document.getElementById("container");
 m.mount(articles, ArticleList);
-}());
+
+
+/***/ })
+/******/ ]);

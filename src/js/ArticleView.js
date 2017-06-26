@@ -1,6 +1,4 @@
 var m = require("mithril");
-var Articles = require("./Articles");
-var Nav = require("./Nav");
 
 var ArticleView = {
 	oninit: function(vnode) {
@@ -86,3 +84,5 @@ var ArticleView = {
 };
 
 module.exports = ArticleView;
+var Articles = require("./Articles");
+var Nav = require("./Nav");

@@ -1,5 +1,4 @@
 var m = require("mithril");
-var Article = require("./Article");
 
 var Articles = {
 	creatingPath: "",
@@ -8,7 +7,7 @@ var Articles = {
 	init: function() {
 		var articlePath = window.location.pathname.split(Config.root)[1];
 
-		if(articlePath === "" || typeof articlePath == "undefined") {
+		if(articlePath === "" || articlePath === "/" || typeof articlePath == "undefined") {
 			articlePath = "index.md";
 		}
 
@@ -23,7 +22,7 @@ var Articles = {
 		return m.request({
 			method: "GET",
 			url: Config.root + "/article/" + articleId
-		})[thenMethod](function(result) {
+		}).then(function(result) {
 			Articles.add(Articles.create(result), addAfter);
 		}).catch(function(e) {
 			if(e.status == 404) {
@@ -115,3 +114,5 @@ var Articles = {
 };
 
 module.exports = Articles;
+var Article = require("./Article");
+var Nav = require("./Nav");

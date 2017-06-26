@@ -1,5 +1,4 @@
 var m = require("mithril");
-var Articles = require("./Articles");
 
 var Nav = {
 	list: [],
@@ -67,7 +66,6 @@ var Nav = {
 					Articles.load(relativeHref, article);
 					e.preventDefault();
 				}
-
 			}
 		}
 	}
@@ -75,3 +73,4 @@ var Nav = {
 
 
 module.exports = Nav;
+var Articles = require("./Articles");
