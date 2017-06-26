@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="SlimWiki" default="build">
+    <target name="build">
+        <echo msg="Creating archive..." />
+
+        <exec command="composer dump-autoload --optimize" />
+
+        <zip destfile="build.zip">
+            <fileset dir=".">
+                <include name="config.php" />
+                <include name="library/.gitkeep" />
+                <include name="public/**" />
+                <exclude name="public/uploads/*" />
+                <include name="src/SlimWiki/**" />
+                <include name="templates/**" />
+                <include name="vendor/**" />
+                <exclude name="vendor/**/test/**" />
+                <exclude name="vendor/**/tests/**" />
+                <exclude name="vendor/**/Tests/**" />
+                <exclude name="vendor/**/docs/**" />
+                <exclude name="vendor/**/ext/**" />
+                <exclude name="vendor/**/example/**" />
+                <exclude name="vendor/**/.*.yml" />
+                <exclude name="vendor/**/composer*" />
+                <exclude name="vendor/**/CONTRIBUTING*" />
+                <exclude name="vendor/**/CHANGELOG*" />
+                <exclude name="vendor/**/LICENSE*" />
+                <exclude name="vendor/**/README*" />
+                <exclude name="vendor/**/phpunit.xml*" />
+                <include name="composer.lock" />
+            </fileset>
+        </zip>
+    </target>
+</project>
