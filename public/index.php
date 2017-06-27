@@ -7,11 +7,12 @@ $container['view'] = new \Slim\Views\PhpRenderer(__DIR__ . "/../templates/");
 $app = new \Slim\App($container);
 
 $container['Controller'] = function ($container) {
-	$view = $container->get("view");
-	$markdown = $container->get("markdown");
-	$library = $container->get("library");
-	$uploads = $container->get("uploads");
-	return new SlimWiki\Controller($view, $markdown, $library, $uploads);
+	$siteName = $container["settings"]["siteName"];
+	$view     = $container["view"];
+	$markdown = $container["markdown"];
+	$library  = $container["library"];
+	$uploads  = $container["uploads"];
+	return new SlimWiki\Controller($view, $siteName, $markdown, $library, $uploads);
 };
 
 $app->get('/tree', "Controller:tree");

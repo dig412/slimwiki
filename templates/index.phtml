@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Slim Wiki</title>
+	<title><?=$siteName?></title>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<link rel="stylesheet" type="text/css" href="<?=$root?>/css/main.css" />
 	<link rel="stylesheet" type="text/css" href="<?=$root?>/css/simplemde.min.css" />
@@ -19,6 +19,7 @@
 		<script type="text/javascript">
 			var Config = {};
 			Config.root = "<?=$root?>";
+			Config.siteName = "<?=$siteName?>";
 		</script>
 		<script type="text/javascript" src="<?=$root?>/js/app.js"></script>
 		<script type="text/javascript" src="<?=$root?>/js/zenscroll-min.js"></script>

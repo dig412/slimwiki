@@ -7,13 +7,15 @@ use \Psr\Http\Message\ResponseInterface as Response;
 class Controller
 {
 	private $view;
+	private $siteName;
 	private $markdown;
 	private $library;
 	private $uploads;
 
-	public function __construct(\Slim\Views\PhpRenderer $view, \Parsedown $markdown, \League\Flysystem\Filesystem $library, \League\Flysystem\Filesystem $uploads)
+	public function __construct(\Slim\Views\PhpRenderer $view, $siteName, \Parsedown $markdown, \League\Flysystem\Filesystem $library, \League\Flysystem\Filesystem $uploads)
 	{
 		$this->view = $view;
+		$this->siteName = $siteName;
 		$this->markdown = $markdown;
 		$this->library = $library;
 		$this->uploads = $uploads;
@@ -133,7 +135,10 @@ class Controller
 	public function index(Request $request, Response $response)
 	{
 		$scriptDirectory = rtrim(str_replace("\\", "/", dirname($_SERVER['SCRIPT_NAME'])), "/");
-		$response = $this->view->render($response, "index.phtml", ["root" => $scriptDirectory]);
+		$response = $this->view->render($response, "index.phtml", [
+			"root"     => $scriptDirectory,
+			"siteName" => $this->siteName,
+		]);
 		return $response;
 	}
 }

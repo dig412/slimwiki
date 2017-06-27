@@ -4,6 +4,7 @@ use League\Flysystem\Filesystem;
 use League\Flysystem\Adapter\Local;
 
 $container = new Container();
+$container["settings"]["siteName"] = 'Slim Wiki';
 $container["settings"]["displayErrorDetails"] = true;
 $container["settings"]["libraryPath"] = __DIR__ . '/library';
 $container["settings"]["uploadPath"] = __DIR__ . '/public/uploads';

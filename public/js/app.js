@@ -1572,7 +1572,7 @@ var NavView = {
 	},
 	view: function() {
 		return m("div.sidebar", [
-			m("h1", "Ents24 Systems Docs"),
+			m("h1", Config.siteName),
 			m("div.form-group", [
 				m("button.btn.btn-default", {onclick: Articles.new}, "New"),
 				m("label.btn.btn-default", [
