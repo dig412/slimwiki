@@ -27,7 +27,7 @@ var Articles = {
 		}).catch(function(e) {
 			if(e.status == 404) {
 				Articles.creatingPath = e.path;
-				Articles.new();
+				Articles.new(addAfter);
 			}
 		});
 	},
@@ -88,13 +88,13 @@ var Articles = {
 		a.sliding = true;
 		b.sliding = true;
 	},
-	new: function() {
+	new: function(addAfter) {
 		var article = new Article(++Articles.id);
 		//Put the article in edit mode
 		article.editing = true;
 		//Prefill a path if we have one
 		article.path = Articles.creatingPath;
-		Articles.add(article);
+		Articles.add(article, addAfter);
 	},
 	edit: function(item) {
 		item.editing = true;
