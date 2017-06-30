@@ -1368,7 +1368,7 @@ var Nav = {
 
 				if(extension == "md") {
 					var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname)[1];
-					Articles.load(relativeHref, article);
+					ArticleList.load(relativeHref, article);
 					e.preventDefault();
 				}
 			}
@@ -1378,132 +1378,10 @@ var Nav = {
 
 
 module.exports = Nav;
-var Articles = __webpack_require__(2);
+var ArticleList = __webpack_require__(4);
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var m = __webpack_require__(0);
-
-var Articles = {
-	creatingPath: "",
-	list: [],
-	id: 0,
-	init: function() {
-		var articlePath = window.location.pathname.split(Config.root)[1];
-
-		if(articlePath === "" || articlePath === "/" || typeof articlePath == "undefined") {
-			articlePath = "index.md";
-		}
-
-		Articles.load(articlePath);
-	},
-	load: function(articleId, addAfter) {
-
-		//Workaround for a very annoying bug with the Mithril bundler. It very agressively rewrites then to then0 in
-		//comments, strings and function names. This means the method call to mithril below fails.
-		var thenMethod = "th" + "en";
-
-		return m.request({
-			method: "GET",
-			url: Config.root + "/article/" + articleId
-		}).then(function(result) {
-			Articles.add(Articles.create(result), addAfter);
-		}).catch(function(e) {
-			if(e.status == 404) {
-				Articles.creatingPath = e.path;
-				Articles.new(addAfter);
-			}
-		});
-	},
-	save: function(article) {
-		var formData = new FormData();
-		formData.append("article_path", article.path);
-		formData.append("source", article.source);
-		return m.request({
-			method: "POST",
-			url: Config.root + "/article",
-			data: formData,
-		}).then(function(response) {
-			if(!response.success) {
-				alert(response.message);
-			} else {
-				Nav.load();
-			}
-		});
-	},
-	create: function(data) {
-		return new Article(++Articles.id, data);
-	},
-	add: function(article, addAfterArticle) {
-		if (typeof addAfterArticle == 'undefined' || addAfterArticle === null) {
-			Articles.list.push(article);
-		} else {
-			var afterIndex = Articles.list.indexOf(addAfterArticle);
-			Articles.list.splice(afterIndex, 0, article);
-		}
-	},
-	remove: function(article) {
-		var id = Articles.list.indexOf(article);
-		Articles.list.splice(id, 1);
-	},
-	up: function(article, vnode) {
-		var id = Articles.list.indexOf(article);
-		var newId = id+1;
-
-		Articles.swap(id, newId);
-	},
-	down: function(article, vnode) {
-		var id = Articles.list.indexOf(article);
-		var newId = id-1;
-
-		Articles.swap(id, newId);
-	},
-	swap: function(oldId, newId) {
-
-		if(newId < 0 || newId >= Articles.list.length) {
-			return;
-		}
-
-		var a = Articles.list[oldId];
-		var b = Articles.list[newId];
-		Articles.list[newId] = a;
-		Articles.list[oldId] = b;
-		//Mark these articles as sliding, so we can apply list move animations to them
-		a.sliding = true;
-		b.sliding = true;
-	},
-	new: function(addAfter) {
-		var article = new Article(++Articles.id);
-		//Put the article in edit mode
-		article.editing = true;
-		//Prefill a path if we have one
-		article.path = Articles.creatingPath;
-		Articles.add(article, addAfter);
-	},
-	edit: function(item) {
-		item.editing = true;
-	},
-	done: function(item) {
-		item.editing = false;
-		Articles.creatingPath = "";
-	},
-	cleanup: function(article, vnode) {
-		var editor = vnode.dom.editor;
-		article.source = editor.value();
-		article.html = editor.markdown(editor.value());
-		editor.toTextArea();
-		m.redraw();
-		Articles.save(article);
-	}
-};
-
-module.exports = Articles;
-var Article = __webpack_require__(9);
-var Nav = __webpack_require__(1);
-
-/***/ }),
+/* 2 */,
 /* 3 */
 /***/ (function(module, exports) {
 
@@ -1535,26 +1413,82 @@ module.exports = g;
 /***/ (function(module, exports, __webpack_require__) {
 
 var m = __webpack_require__(0);
-var Articles = __webpack_require__(2);
-var ArticleView = __webpack_require__(10);
 
 var ArticleList = {
-	oninit: function() {
-		Articles.init();
-	},
-	view: function() {
-		var articles = [];
+	list: [],
+	init: function() {
+		var articlePath = window.location.pathname.split(Config.root)[1];
 
-		for (var id = Articles.list.length - 1; id >= 0; id--) {
-			var article = Articles.list[id];
-			articles.push(m(ArticleView, {article: article, key: article.id}));
+		if(articlePath === "" || articlePath === "/" || typeof articlePath == "undefined") {
+			articlePath = "index.md";
 		}
 
-		return m("div", articles);
+		ArticleList.load(articlePath);
+	},
+	load: function(articleId, addAfter) {
+
+		//Workaround for a very annoying bug with the Mithril bundler. It very agressively rewrites then to then0 in
+		//comments, strings and function names. This means the method call to mithril below fails.
+		var thenMethod = "th" + "en";
+
+		return m.request({
+			method: "GET",
+			url: Config.root + "/article/" + articleId
+		}).then(function(result) {
+			ArticleList.add(ArticleVM.create(result), addAfter);
+		}).catch(function(e) {
+			if(e.status == 404) {
+				ArticleList.add(ArticleVM.create(null, true, e.path), addAfter);
+			}
+		});
+	},
+	new: function() {
+		ArticleList.add(ArticleVM.create(null, true));
+	},
+	add: function(article, addAfterArticle) {
+		if (typeof addAfterArticle == 'undefined' || addAfterArticle === null) {
+			ArticleList.list.push(article);
+		} else {
+			var afterIndex = ArticleList.list.indexOf(addAfterArticle);
+			ArticleList.list.splice(afterIndex, 0, article);
+		}
+	},
+	remove: function(article) {
+		var id = ArticleList.list.indexOf(article);
+		ArticleList.list.splice(id, 1);
+	},
+	up: function(article, vnode) {
+		var id = ArticleList.list.indexOf(article);
+		var newId = id+1;
+
+		ArticleList.swap(id, newId);
+	},
+	down: function(article, vnode) {
+		var id = ArticleList.list.indexOf(article);
+		var newId = id-1;
+
+		ArticleList.swap(id, newId);
+	},
+	swap: function(oldId, newId) {
+
+		if(newId < 0 || newId >= ArticleList.list.length) {
+			return;
+		}
+
+		var a = ArticleList.list[oldId];
+		var b = ArticleList.list[newId];
+		ArticleList.list[newId] = a;
+		ArticleList.list[oldId] = b;
+		//Mark these articles as sliding, so we can apply list move animations to them
+		a.sliding = true;
+		b.sliding = true;
 	}
 };
 
 module.exports = ArticleList;
+var Article = __webpack_require__(9);
+var ArticleVM = __webpack_require__(14);
+
 
 /***/ }),
 /* 5 */
@@ -1564,7 +1498,7 @@ var m = __webpack_require__(0);
 var Nav = __webpack_require__(1);
 var Tree = __webpack_require__(12);
 var SearchResults = __webpack_require__(11);
-var Articles = __webpack_require__(2);
+var ArticleList = __webpack_require__(4);
 
 var NavView = {
 	oninit: function() {
@@ -1574,7 +1508,7 @@ var NavView = {
 		return m("div.sidebar", [
 			m("h1", Config.siteName),
 			m("div.form-group", [
-				m("button.btn.btn-default", {onclick: Articles.new}, "New"),
+				m("button.btn.btn-default", {onclick: ArticleList.new}, "New"),
 				m("label.btn.btn-default", [
 					Nav.uploading ? m("i.fa.fa-circle-o-notch.fa-spin") : null,
 					" Upload ",
@@ -2044,7 +1978,7 @@ exports.clearImmediate = clearImmediate;
 var Article = function(id, data) {
 	this.id = id;
 	this.editing = false;
-	if(typeof data !== 'undefined') {
+	if(typeof data !== 'undefined' && data !== null) {
 		this.path = data.path;
 		this.html = data.html;
 		this.source = data.source;
@@ -2120,13 +2054,18 @@ var ArticleView = {
 
 		return m("div.article", [
 			m("div.article-controls.clearfix", [
-				m("div.pull-right", [
-					m("button.btn-invisible", {onclick: Articles.remove.bind(Articles, article)}, m("i.fa.fa-times")),
-					m("button.btn-invisible", {onclick: Articles.up.bind(Articles, article, vnode)}, m("i.fa.fa-chevron-up")),
-					m("button.btn-invisible", {onclick: Articles.down.bind(Articles, article, vnode)}, m("i.fa.fa-chevron-down")),
-					!article.editing ? m("button.btn-invisible", {onclick: Articles.edit.bind(Articles, article)}, m("i.fa.fa-pencil")) : null,
-					article.editing ? m("button.btn-invisible", {onclick: Articles.done.bind(Articles, article)}, m("i.fa.fa-floppy-o")) : null
-				])
+				m("div.pull-right", 
+
+					article.editing ? [
+						m("button.btn-invisible", {onclick: ArticleVM.cancel.bind(ArticleVM, article)}, m("i.fa.fa-times-circle")),
+						m("button.btn-invisible", {onclick: ArticleVM.done.bind(ArticleVM, article)}, m("i.fa.fa-floppy-o")),
+					] : [
+						m("button.btn-invisible", {onclick: ArticleList.remove.bind(ArticleList, article)}, m("i.fa.fa-times")),
+						m("button.btn-invisible", {onclick: ArticleList.up.bind(ArticleList, article, vnode)}, m("i.fa.fa-chevron-up")),
+						m("button.btn-invisible", {onclick: ArticleList.down.bind(ArticleList, article, vnode)}, m("i.fa.fa-chevron-down")),
+						m("button.btn-invisible", {onclick: ArticleVM.edit.bind(ArticleVM, article)}, m("i.fa.fa-pencil")),
+					]
+				)
 			]),
 			!article.editing ? m("div.article-contents", { onclick: Nav.handleClick.bind(Nav, article) }, m.trust(article.html)) : null,
 			article.editing ? m("form", [
@@ -2142,7 +2081,7 @@ var ArticleView = {
 							spellChecker: false,
 							toolbar: ["bold", "italic", "heading", "|", "code", "quote", "unordered-list", "table", "horizontal-rule", "|", "link", "image", "|", "preview", "guide"],
 						});},
-						onremove: Articles.cleanup.bind(Articles, article),
+						onremove: ArticleVM.cleanup.bind(ArticleList, article),
 					}, article.source)
 				])
 			]) : null,
@@ -2151,7 +2090,8 @@ var ArticleView = {
 };
 
 module.exports = ArticleView;
-var Articles = __webpack_require__(2);
+var ArticleList = __webpack_require__(4);
+var ArticleVM = __webpack_require__(14);
 var Nav = __webpack_require__(1);
 
 /***/ }),
@@ -2221,15 +2161,107 @@ module.exports = Tree;
 /***/ (function(module, exports, __webpack_require__) {
 
 var m = __webpack_require__(0);
-var ArticleList = __webpack_require__(4);
+var ArticleListView = __webpack_require__(15);
 var NavView = __webpack_require__(5);
 
 var nav = document.getElementById("sidebar");
 m.mount(nav, NavView);
 
 var articles = document.getElementById("container");
-m.mount(articles, ArticleList);
+m.mount(articles, ArticleListView);
 
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var m = __webpack_require__(0);
+
+var ArticleVM = {
+	id: 0,
+	create: function(data, editing, path) {
+		var article = new Article(++ArticleVM.id, data);
+		//Put the article in edit mode if requested
+		article.editing = editing;
+		//Prefill a path if we have one
+		article.path = path;
+		return article;
+	},
+	save: function(article) {
+		var formData = new FormData();
+		formData.append("article_path", article.path);
+		formData.append("source", article.source);
+		return m.request({
+			method: "POST",
+			url: Config.root + "/article",
+			data: formData,
+		}).then(function(response) {
+			if(!response.success) {
+				alert(response.message);
+			} else {
+				Nav.load();
+			}
+		});
+	},
+	edit: function(item) {
+		item.editing = true;
+	},
+	done: function(article) {
+		article.editing = false;
+		article.shouldSave = true;
+	},
+	cancel: function(article) {
+		article.editing = false;
+		article.shouldSave = false;
+	},
+	cleanup: function(article, vnode) {
+		var editor = vnode.dom.editor;
+
+		if(article.shouldSave) {
+			article.source = editor.value();
+			article.html = editor.markdown(editor.value());
+		}
+
+		editor.toTextArea();
+		m.redraw();
+
+		if(article.shouldSave) {
+			ArticleVM.save(article);
+		}
+
+		article.shouldSave = false;
+	}
+};
+
+module.exports = ArticleVM;
+var Article = __webpack_require__(9);
+var Nav = __webpack_require__(1);
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var m = __webpack_require__(0);
+var ArticleList = __webpack_require__(4);
+var ArticleView = __webpack_require__(10);
+
+var ArticleListView = {
+	oninit: function() {
+		ArticleList.init();
+	},
+	view: function() {
+		var articles = [];
+
+		for (var id = ArticleList.list.length - 1; id >= 0; id--) {
+			var article = ArticleList.list[id];
+			articles.push(m(ArticleView, {article: article, key: article.id}));
+		}
+
+		return m("div", articles);
+	}
+};
+
+module.exports = ArticleListView;
 
 /***/ })
 /******/ ]);

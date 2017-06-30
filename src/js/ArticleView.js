@@ -57,13 +57,18 @@ var ArticleView = {
 
 		return m("div.article", [
 			m("div.article-controls.clearfix", [
-				m("div.pull-right", [
-					m("button.btn-invisible", {onclick: Articles.remove.bind(Articles, article)}, m("i.fa.fa-times")),
-					m("button.btn-invisible", {onclick: Articles.up.bind(Articles, article, vnode)}, m("i.fa.fa-chevron-up")),
-					m("button.btn-invisible", {onclick: Articles.down.bind(Articles, article, vnode)}, m("i.fa.fa-chevron-down")),
-					!article.editing ? m("button.btn-invisible", {onclick: Articles.edit.bind(Articles, article)}, m("i.fa.fa-pencil")) : null,
-					article.editing ? m("button.btn-invisible", {onclick: Articles.done.bind(Articles, article)}, m("i.fa.fa-floppy-o")) : null
-				])
+				m("div.pull-right", 
+
+					article.editing ? [
+						m("button.btn-invisible", {onclick: ArticleVM.cancel.bind(ArticleVM, article)}, m("i.fa.fa-times-circle")),
+						m("button.btn-invisible", {onclick: ArticleVM.done.bind(ArticleVM, article)}, m("i.fa.fa-floppy-o")),
+					] : [
+						m("button.btn-invisible", {onclick: ArticleList.remove.bind(ArticleList, article)}, m("i.fa.fa-times")),
+						m("button.btn-invisible", {onclick: ArticleList.up.bind(ArticleList, article, vnode)}, m("i.fa.fa-chevron-up")),
+						m("button.btn-invisible", {onclick: ArticleList.down.bind(ArticleList, article, vnode)}, m("i.fa.fa-chevron-down")),
+						m("button.btn-invisible", {onclick: ArticleVM.edit.bind(ArticleVM, article)}, m("i.fa.fa-pencil")),
+					]
+				)
 			]),
 			!article.editing ? m("div.article-contents", { onclick: Nav.handleClick.bind(Nav, article) }, m.trust(article.html)) : null,
 			article.editing ? m("form", [
@@ -79,7 +84,7 @@ var ArticleView = {
 							spellChecker: false,
 							toolbar: ["bold", "italic", "heading", "|", "code", "quote", "unordered-list", "table", "horizontal-rule", "|", "link", "image", "|", "preview", "guide"],
 						});},
-						onremove: Articles.cleanup.bind(Articles, article),
+						onremove: ArticleVM.cleanup.bind(ArticleList, article),
 					}, article.source)
 				])
 			]) : null,
@@ -88,5 +93,6 @@ var ArticleView = {
 };
 
 module.exports = ArticleView;
-var Articles = require("./Articles");
+var ArticleList = require("./ArticleList");
+var ArticleVM = require("./ArticleVM");
 var Nav = require("./Nav");

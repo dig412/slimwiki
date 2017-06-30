@@ -2,7 +2,7 @@ var m = require("mithril");
 var Nav = require("./Nav");
 var Tree = require("./Tree");
 var SearchResults = require("./SearchResults");
-var Articles = require("./Articles");
+var ArticleList = require("./ArticleList");
 
 var NavView = {
 	oninit: function() {
@@ -12,7 +12,7 @@ var NavView = {
 		return m("div.sidebar", [
 			m("h1", Config.siteName),
 			m("div.form-group", [
-				m("button.btn.btn-default", {onclick: Articles.new}, "New"),
+				m("button.btn.btn-default", {onclick: ArticleList.new}, "New"),
 				m("label.btn.btn-default", [
 					Nav.uploading ? m("i.fa.fa-circle-o-notch.fa-spin") : null,
 					" Upload ",

@@ -63,7 +63,7 @@ var Nav = {
 
 				if(extension == "md") {
 					var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname)[1];
-					Articles.load(relativeHref, article);
+					ArticleList.load(relativeHref, article);
 					e.preventDefault();
 				}
 			}
@@ -73,4 +73,4 @@ var Nav = {
 
 
 module.exports = Nav;
-var Articles = require("./Articles");
+var ArticleList = require("./ArticleList");
