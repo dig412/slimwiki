@@ -16,6 +16,7 @@ $container['Controller'] = function ($container) {
 };
 
 $app->get('/tree', "Controller:tree");
+$app->get('/getUploads', "Controller:uploads");
 $app->get('/article/{article_path:.*}', "Controller:getArticle");
 $app->post('/article', "Controller:saveArticle");
 $app->get('/search/{query}', "Controller:search");

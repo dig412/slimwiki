@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 13);
+/******/ 	return __webpack_require__(__webpack_require__.s = 14);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1297,7 +1297,7 @@ m.vnode = Vnode
 if (true) module["exports"] = m
 else window.m = m
 }());
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8).setImmediate, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).setImmediate, __webpack_require__(3)))
 
 /***/ }),
 /* 1 */
@@ -1307,12 +1307,15 @@ var m = __webpack_require__(0);
 
 var Nav = {
 	list: [],
+	uploads: [],
 	results: [],
 	query: "",
 	uploading: false,
 	error: "",
+	state: "articles",
 	init: function() {
 		this.load();
+		this.loadUploads();
 	},
 	load: function() {
 		return m.request({
@@ -1321,6 +1324,15 @@ var Nav = {
 		})
 		.then(function(result) {
 			Nav.list = result;
+		});
+	},
+	loadUploads: function() {
+		return m.request({
+			method: "GET",
+			url: Config.root + "/getUploads",
+		})
+		.then(function(result) {
+			Nav.uploads = result;
 		});
 	},
 	search: function(query) {
@@ -1350,7 +1362,7 @@ var Nav = {
 			url: Config.root + "/upload",
 			data: data,
 		}).then(function(result) {
-			Nav.load();
+			Nav.loadUploads();
 			Nav.uploading = false;			
 		}).catch(function(e) {
 			Nav.error = e.message;
@@ -1358,6 +1370,9 @@ var Nav = {
 		});
 	},
 	handleClick: function(article, e) {
+
+		console.log(e);
+		e.preventDefault();
 
 		if (e.target.nodeName == "A") {
 			//If it's a link to this site then intercept it and try and load the relevant article
@@ -1367,7 +1382,7 @@ var Nav = {
 				var extension = urlParts[urlParts.length-1];
 
 				if(extension == "md") {
-					var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname)[1];
+					var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname || "")[1];
 					ArticleList.load(relativeHref, article);
 					e.preventDefault();
 				}
@@ -1378,38 +1393,10 @@ var Nav = {
 
 
 module.exports = Nav;
-var ArticleList = __webpack_require__(4);
+var ArticleList = __webpack_require__(2);
 
 /***/ }),
-/* 2 */,
-/* 3 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 4 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var m = __webpack_require__(0);
@@ -1486,19 +1473,158 @@ var ArticleList = {
 };
 
 module.exports = ArticleList;
-var Article = __webpack_require__(9);
-var ArticleVM = __webpack_require__(14);
+var Article = __webpack_require__(4);
+var ArticleVM = __webpack_require__(5);
 
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+var Article = function(id, data) {
+	this.id = id;
+	this.editing = false;
+	if(typeof data !== 'undefined' && data !== null) {
+		this.path = data.path;
+		this.html = data.html;
+		this.source = data.source;
+	} else {
+		this.path = "";
+		this.html = "";
+		this.source = "";
+	}
+};
+
+module.exports = Article;
 
 /***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var m = __webpack_require__(0);
+
+var ArticleVM = {
+	id: 0,
+	create: function(data, editing, path) {
+		var article = new Article(++ArticleVM.id, data);
+		//Put the article in edit mode if requested
+		article.editing = editing;
+		//Prefill a path if we have one
+		article.path = path;
+		return article;
+	},
+	save: function(article) {
+		var formData = new FormData();
+		formData.append("article_path", article.path);
+		formData.append("source", article.source);
+		return m.request({
+			method: "POST",
+			url: Config.root + "/article",
+			data: formData,
+		}).then(function(response) {
+			if(!response.success) {
+				alert(response.message);
+			} else {
+				Nav.load();
+			}
+		});
+	},
+	edit: function(item) {
+		item.editing = true;
+	},
+	done: function(article) {
+		article.editing = false;
+		article.shouldSave = true;
+	},
+	cancel: function(article) {
+		article.editing = false;
+		article.shouldSave = false;
+	},
+	cleanup: function(article, vnode) {
+		var editor = vnode.dom.editor;
+
+		if(article.shouldSave) {
+			article.source = editor.value();
+			article.html = editor.markdown(editor.value());
+		}
+
+		editor.toTextArea();
+		m.redraw();
+
+		if(article.shouldSave) {
+			ArticleVM.save(article);
+		}
+
+		article.shouldSave = false;
+	}
+};
+
+module.exports = ArticleVM;
+var Article = __webpack_require__(4);
 var Nav = __webpack_require__(1);
-var Tree = __webpack_require__(12);
-var SearchResults = __webpack_require__(11);
-var ArticleList = __webpack_require__(4);
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var m = __webpack_require__(0);
+var ArticleList = __webpack_require__(2);
+var ArticleView = __webpack_require__(11);
+
+var ArticleListView = {
+	oninit: function() {
+		ArticleList.init();
+	},
+	view: function() {
+		var articles = [];
+
+		for (var id = ArticleList.list.length - 1; id >= 0; id--) {
+			var article = ArticleList.list[id];
+			articles.push(m(ArticleView, {article: article, key: article.id}));
+		}
+
+		return m("div", articles);
+	}
+};
+
+module.exports = ArticleListView;
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var m = __webpack_require__(0);
+var Nav = __webpack_require__(1);
+var Tree = __webpack_require__(13);
+var SearchResults = __webpack_require__(12);
+var ArticleList = __webpack_require__(2);
 
 var NavView = {
 	oninit: function() {
@@ -1506,23 +1632,35 @@ var NavView = {
 	},
 	view: function() {
 		return m("div.sidebar", [
+
 			m("h1", Config.siteName),
-			m("div.form-group", [
-				m("button.btn.btn-default", {onclick: ArticleList.new}, "New"),
-				m("label.btn.btn-default", [
-					Nav.uploading ? m("i.fa.fa-circle-o-notch.fa-spin") : null,
-					" Upload ",
-					m("i.fa.fa-upload"),
-					m("input[type=file]", {onchange: Nav.upload, style:"display: none;"})
+			m("ul.tabs", [
+				m("li"+(Nav.state=="articles" ? ".active" : ""), m("a", {onclick: function() {Nav.state = "articles";}}, "Articles")),
+				m("li"+(Nav.state=="uploads" ? ".active" : ""), m("a", {onclick: function() {Nav.state = "uploads";}}, "Uploads"))
+			]),
+
+			Nav.state == "articles" ? [
+				m("div.form-group", [
+					m("button.btn.btn-default", {onclick: ArticleList.new}, "New"),
 				]),
-			]),
-			Nav.error ? Nav.error : null,
-			m("div.input-group", [
-				m("input.form-control.input-sm", {placeholder: "Search", type: "text", oninput: m.withAttr("value", Nav.search), value: Nav.query}),
-				m("a.input-group-addon.input-sm", {onclick:  Nav.clearResults}, m("i.fa.fa-times ")),
-			]),
-			Nav.results.length > 0 ? m(SearchResults, {results: Nav.results}): null,
-			m(Tree, {tree : Nav.list}),
+				Nav.error ? Nav.error : null,
+				m("div.input-group", [
+					m("input.form-control.input-sm", {placeholder: "Search", type: "text", oninput: m.withAttr("value", Nav.search), value: Nav.query}),
+					m("a.input-group-addon.input-sm", {onclick:  Nav.clearResults}, m("i.fa.fa-times ")),
+				]),
+				Nav.results.length > 0 ? m(SearchResults, {results: Nav.results}): null,
+				m(Tree, {tree : Nav.list}),
+			] : [
+				m("div.form-group", [
+					m("label.btn.btn-default", [
+						Nav.uploading ? m("i.fa.fa-circle-o-notch.fa-spin") : null,
+						" Upload ",
+						m("i.fa.fa-upload"),
+						m("input[type=file]", {onchange: Nav.upload, style:"display: none;"})
+					]),
+				]),
+				m(Tree, {tree : Nav.uploads}),
+			]
 		]);
 	}
 };
@@ -1530,7 +1668,7 @@ var NavView = {
 module.exports = NavView;
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -1720,7 +1858,66 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 7 */
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var apply = Function.prototype.apply;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) {
+  if (timeout) {
+    timeout.close();
+  }
+};
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(window, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        item._onTimeout();
+    }, msecs);
+  }
+};
+
+// setimmediate attaches itself to the global object
+__webpack_require__(10);
+exports.setImmediate = setImmediate;
+exports.clearImmediate = clearImmediate;
+
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -1910,89 +2107,10 @@ process.umask = function() { return 0; };
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3), __webpack_require__(6)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3), __webpack_require__(8)))
 
 /***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var apply = Function.prototype.apply;
-
-// DOM APIs, for completeness
-
-exports.setTimeout = function() {
-  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
-};
-exports.setInterval = function() {
-  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
-};
-exports.clearTimeout =
-exports.clearInterval = function(timeout) {
-  if (timeout) {
-    timeout.close();
-  }
-};
-
-function Timeout(id, clearFn) {
-  this._id = id;
-  this._clearFn = clearFn;
-}
-Timeout.prototype.unref = Timeout.prototype.ref = function() {};
-Timeout.prototype.close = function() {
-  this._clearFn.call(window, this._id);
-};
-
-// Does not start the time, just sets up the members needed.
-exports.enroll = function(item, msecs) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = msecs;
-};
-
-exports.unenroll = function(item) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = -1;
-};
-
-exports._unrefActive = exports.active = function(item) {
-  clearTimeout(item._idleTimeoutId);
-
-  var msecs = item._idleTimeout;
-  if (msecs >= 0) {
-    item._idleTimeoutId = setTimeout(function onTimeout() {
-      if (item._onTimeout)
-        item._onTimeout();
-    }, msecs);
-  }
-};
-
-// setimmediate attaches itself to the global object
-__webpack_require__(7);
-exports.setImmediate = setImmediate;
-exports.clearImmediate = clearImmediate;
-
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports) {
-
-var Article = function(id, data) {
-	this.id = id;
-	this.editing = false;
-	if(typeof data !== 'undefined' && data !== null) {
-		this.path = data.path;
-		this.html = data.html;
-		this.source = data.source;
-	} else {
-		this.path = "";
-		this.html = "";
-		this.source = "";
-	}
-};
-
-module.exports = Article;
-
-/***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var m = __webpack_require__(0);
@@ -2090,12 +2208,12 @@ var ArticleView = {
 };
 
 module.exports = ArticleView;
-var ArticleList = __webpack_require__(4);
-var ArticleVM = __webpack_require__(14);
+var ArticleList = __webpack_require__(2);
+var ArticleVM = __webpack_require__(5);
 var Nav = __webpack_require__(1);
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var m = __webpack_require__(0);
@@ -2113,7 +2231,7 @@ var SearchResults = {
 module.exports = SearchResults;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var m = __webpack_require__(0);
@@ -2157,12 +2275,12 @@ var Tree = {
 module.exports = Tree;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var m = __webpack_require__(0);
-var ArticleListView = __webpack_require__(15);
-var NavView = __webpack_require__(5);
+var ArticleListView = __webpack_require__(6);
+var NavView = __webpack_require__(7);
 
 var nav = document.getElementById("sidebar");
 m.mount(nav, NavView);
@@ -2170,98 +2288,6 @@ m.mount(nav, NavView);
 var articles = document.getElementById("container");
 m.mount(articles, ArticleListView);
 
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var m = __webpack_require__(0);
-
-var ArticleVM = {
-	id: 0,
-	create: function(data, editing, path) {
-		var article = new Article(++ArticleVM.id, data);
-		//Put the article in edit mode if requested
-		article.editing = editing;
-		//Prefill a path if we have one
-		article.path = path;
-		return article;
-	},
-	save: function(article) {
-		var formData = new FormData();
-		formData.append("article_path", article.path);
-		formData.append("source", article.source);
-		return m.request({
-			method: "POST",
-			url: Config.root + "/article",
-			data: formData,
-		}).then(function(response) {
-			if(!response.success) {
-				alert(response.message);
-			} else {
-				Nav.load();
-			}
-		});
-	},
-	edit: function(item) {
-		item.editing = true;
-	},
-	done: function(article) {
-		article.editing = false;
-		article.shouldSave = true;
-	},
-	cancel: function(article) {
-		article.editing = false;
-		article.shouldSave = false;
-	},
-	cleanup: function(article, vnode) {
-		var editor = vnode.dom.editor;
-
-		if(article.shouldSave) {
-			article.source = editor.value();
-			article.html = editor.markdown(editor.value());
-		}
-
-		editor.toTextArea();
-		m.redraw();
-
-		if(article.shouldSave) {
-			ArticleVM.save(article);
-		}
-
-		article.shouldSave = false;
-	}
-};
-
-module.exports = ArticleVM;
-var Article = __webpack_require__(9);
-var Nav = __webpack_require__(1);
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var m = __webpack_require__(0);
-var ArticleList = __webpack_require__(4);
-var ArticleView = __webpack_require__(10);
-
-var ArticleListView = {
-	oninit: function() {
-		ArticleList.init();
-	},
-	view: function() {
-		var articles = [];
-
-		for (var id = ArticleList.list.length - 1; id >= 0; id--) {
-			var article = ArticleList.list[id];
-			articles.push(m(ArticleView, {article: article, key: article.id}));
-		}
-
-		return m("div", articles);
-	}
-};
-
-module.exports = ArticleListView;
 
 /***/ })
 /******/ ]);

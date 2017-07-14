@@ -28,6 +28,16 @@ class Controller
 		return $response;
 	}
 
+	public function uploads(Request $request, Response $response)
+	{
+		$files = $this->uploads->listTree(".");
+		foreach($files as &$file) {
+			$file["path"] = "uploads/" . $file["path"];
+		}
+		$response = $response->withJson($files);
+		return $response;
+	}
+
 	public function getArticle(Request $request, Response $response)
 	{
 		$path = $request->getAttribute('article_path');

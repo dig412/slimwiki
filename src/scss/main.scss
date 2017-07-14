@@ -16,6 +16,68 @@ a, a:focus {
     padding-top:20px
 }
 
+.tabs {
+    width: 100%;
+    list-style: none;
+
+    li {
+        padding: 5px 0;
+        list-style: none;
+        display: table-cell;
+        width: 1%;
+
+        a {
+            display: block;
+            text-decoration: none;
+            margin-bottom: 5px;
+            text-align: center;
+            border-radius: 4px;
+            position: relative;
+            padding: 10px 15px;
+            color: #337ab7;
+            cursor: pointer;
+
+            &:hover {
+                color: #23527c;
+
+                &:after {
+                    content: "";
+                    float: left;
+                    background: #23527c;
+                    width: 100%;
+                    height: 2px;
+                    border-radius: 2px;
+                    margin-top: 5px;
+                }
+            }
+
+        }
+
+        &.active {
+            a {
+
+                &:after {
+                  content: "";
+                  float: left;
+                  background: #bbb;
+                  width: 100%;
+                  height: 2px;
+                  border-radius: 2px;
+                  margin-top: 5px;
+                }
+
+                &:hover {
+                    color: #23527c;
+                    
+                    &:after {
+                      background: #23527c;
+                    }
+                }
+            }
+        }
+    }
+}
+
 .sidebar {
     border-right: 2px solid #BBB;
     padding: 0 20px;
@@ -80,6 +142,7 @@ a, a:focus {
 ul.search-results {
     background-color: #ffffff;
     padding: 5px 0;
+    margin-top: 0px;
     border: {
         right: 1px solid #BBB;
         left: 1px solid #BBB;
@@ -114,6 +177,11 @@ ul.search-results {
     }
     h1 {
         font-size: 30px;
+        font-weight: 300;
+        font-size: 2.35em;
+        line-height: 1.2em;
+        color: #182955;
+        margin-top: -40px;
     }
     h2 {
         font-size: 24px;
@@ -124,14 +192,10 @@ ul.search-results {
     h4 {
         font-size: 15px;
     }
-}
 
-.article-contents h1 {
-    font-weight: 300;
-    font-size: 2.35em;
-    line-height: 1.2em;
-    color: #182955;
-    margin-top: -40px;
+    img {
+        max-width: 100%;
+    }
 }
 
 .article-controls {

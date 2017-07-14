@@ -2,12 +2,15 @@ var m = require("mithril");
 
 var Nav = {
 	list: [],
+	uploads: [],
 	results: [],
 	query: "",
 	uploading: false,
 	error: "",
+	state: "articles",
 	init: function() {
 		this.load();
+		this.loadUploads();
 	},
 	load: function() {
 		return m.request({
@@ -16,6 +19,15 @@ var Nav = {
 		})
 		.then(function(result) {
 			Nav.list = result;
+		});
+	},
+	loadUploads: function() {
+		return m.request({
+			method: "GET",
+			url: Config.root + "/getUploads",
+		})
+		.then(function(result) {
+			Nav.uploads = result;
 		});
 	},
 	search: function(query) {
@@ -45,7 +57,7 @@ var Nav = {
 			url: Config.root + "/upload",
 			data: data,
 		}).then(function(result) {
-			Nav.load();
+			Nav.loadUploads();
 			Nav.uploading = false;			
 		}).catch(function(e) {
 			Nav.error = e.message;
@@ -53,6 +65,9 @@ var Nav = {
 		});
 	},
 	handleClick: function(article, e) {
+
+		console.log(e);
+		e.preventDefault();
 
 		if (e.target.nodeName == "A") {
 			//If it's a link to this site then intercept it and try and load the relevant article
@@ -62,7 +77,7 @@ var Nav = {
 				var extension = urlParts[urlParts.length-1];
 
 				if(extension == "md") {
-					var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname)[1];
+					var relativeHref = e.target.href.split(window.location.hostname + window.location.pathname || "")[1];
 					ArticleList.load(relativeHref, article);
 					e.preventDefault();
 				}
