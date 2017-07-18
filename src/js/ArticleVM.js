@@ -7,7 +7,9 @@ var ArticleVM = {
 		//Put the article in edit mode if requested
 		article.editing = editing;
 		//Prefill a path if we have one
-		article.path = path;
+		if(typeof path !== "undefined" && path !== null) {
+			article.path = path;
+		}
 		return article;
 	},
 	save: function(article) {

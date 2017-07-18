@@ -66,9 +66,6 @@ var Nav = {
 	},
 	handleClick: function(article, e) {
 
-		console.log(e);
-		e.preventDefault();
-
 		if (e.target.nodeName == "A") {
 			//If it's a link to this site then intercept it and try and load the relevant article
 			if(window.location.hostname == e.target.hostname) {
