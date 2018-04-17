@@ -6,7 +6,7 @@ use Parsedown;
 /**
  * Adds "target=_blank" to any urls or links that have a host component - i.e. they point to another site
  */
-class ParsedownLinkTarget extends Parsedown
+class ParsedownExtensions extends Parsedown
 {
 	protected function applyLinkTarget(&$link)
 	{
@@ -37,5 +37,17 @@ class ParsedownLinkTarget extends Parsedown
 			}
 			return $temp;
 		}
+	}
+
+	protected function blockTable($Line, array $Block = null)
+	{
+		$Block = parent::blockTable($Line, $Block);
+
+		if(is_array($Block)) {
+			$Block['element']['attributes'] = [];
+			$Block['element']['attributes']['class'] = 'table table-striped table-bordered';
+		}
+
+		return $Block;
 	}
 }
