@@ -24,6 +24,39 @@ For Apache:
 ## Configuration
 Open `config.php` in the root to change settings.
 
+## Relication
+To replicate / backup your content on a different system you can add a second adapter and use Flysystem's ReplicateAdapter to automatically
+copy changes to your replica.
+
+For example:
+
+```
+composer require league/flysystem-aws-s3-v3
+composer require league/flysystem-replicate-adapter
+```
+
+Then change the `library` entry in `config.php` to the following:
+
+```
+$container['library'] = function($container)
+{
+	$client = S3Client::factory([
+	    'region' => 'eu-west-1',
+	    'version' => 'latest',
+	    //'credentials'
+	]);
+	
+	$source = new Local($container["settings"]["libraryPath"]);
+	$replica = new AwsS3Adapter($client, 'my-s3-bucket', 'optional-path-prefix');
+	$adapter = new ReplicateAdapter($source, $replica);
+	$filesystem = new Filesystem($adapter);
+	$filesystem->addPlugin(new SlimWiki\ListTree);
+	return $filesystem;
+};
+```
+
+This will use the local copy for any read operations, but duplicate any writes to the local filesystem and S3.
+
 ## Development
 Clone the repo, then run
 
