@@ -23,7 +23,7 @@ var NavView = {
 				]),
 				Nav.error ? Nav.error : null,
 				m("div.input-group", [
-					m("input.form-control.input-sm", {placeholder: "Search", type: "text", oninput: m.withAttr("value", Nav.search), value: Nav.query}),
+					m("input.form-control.input-sm", {placeholder: "Search", type: "text", oninput: function(ev){Nav.search(ev.target.value)}, value: Nav.query}),
 					m("a.input-group-addon.input-sm", {onclick:  Nav.clearResults}, m("i.fa.fa-times ")),
 				]),
 				Nav.results.length > 0 ? m(SearchResults, {results: Nav.results}): null,

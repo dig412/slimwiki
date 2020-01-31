@@ -1,16 +1,19 @@
 {
   "dependencies": {
-    "mithril": "^1.1.1",
-    "node-sass": "^4.5.3",
-    "parallelshell": "^3.0.1"
+    "mithril": "^2.0"
   },
   "scripts": {
-    "webpack-js": "webpack src/js/index.js public/js/app.js --watch",
-    "build-js": "bundle src/js/index.js --output public/js/app.js",
+    "build-js": "webpack src/js/index.js --output public/js/app.js -p",
+    "watch-js": "webpack src/js/index.js --output public/js/app.js -d --watch",
     "build-css": "node-sass src/scss/main.scss public/css/main.css",
-    "watch-js": "bundle src/js/index.js --output public/js/app.js --watch",
     "watch-css": "node-sass src/scss/main.scss public/css/main.css -w",
-    "watch": "parallelshell \"npm run watch-js\" \"npm run watch-css\"",
+    "watch": "parallelshell \"npm run webpack-js\" \"npm run watch-css\"",
     "build": "npm run build-js && npm run build-css"
+  },
+  "devDependencies": {
+    "node-sass": "^4.5.3",
+    "parallelshell": "^3.0.1",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
   }
 }

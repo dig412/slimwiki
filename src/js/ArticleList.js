@@ -12,11 +12,6 @@ var ArticleList = {
 		ArticleList.load(articlePath);
 	},
 	load: function(articleId, addAfter) {
-
-		//Workaround for a very annoying bug with the Mithril bundler. It very agressively rewrites then to then0 in
-		//comments, strings and function names. This means the method call to mithril below fails.
-		var thenMethod = "th" + "en";
-
 		return m.request({
 			method: "GET",
 			url: Config.root + "/article/" + articleId

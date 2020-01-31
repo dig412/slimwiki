@@ -74,7 +74,7 @@ var ArticleView = {
 			article.editing ? m("form", [
 				m("div.form-group", [
 					m("label", "Article name"),
-					m("input.form-control", { oninput: m.withAttr("value", function(value){article.path = value;}), value: article.path}),
+					m("input.form-control", { oninput: function(ev){article.path = ev.target.value}, value: article.path}),
 				]),
 				m("div.form-group", [
 					m("label", "Article contents"),
