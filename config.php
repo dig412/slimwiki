@@ -25,7 +25,7 @@ $container['uploads'] = function($container)
 };
 $container['markdown'] = function($container)
 {
-	$markdown = new SlimWiki\ParsedownExtensions($adapter);
+	$markdown = new SlimWiki\ParsedownExtensions();
 	return $markdown;
 };
 
