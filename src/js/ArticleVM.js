@@ -19,7 +19,7 @@ var ArticleVM = {
 		return m.request({
 			method: "POST",
 			url: Config.root + "/article",
-			data: formData,
+			body: formData,
 		}).then(function(response) {
 			if(!response.success) {
 				alert(response.message);

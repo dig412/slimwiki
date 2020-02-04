@@ -55,7 +55,7 @@ var Nav = {
 		m.request({
 			method: "POST",
 			url: Config.root + "/upload",
-			data: data,
+			body: data,
 		}).then(function(result) {
 			Nav.loadUploads();
 			Nav.uploading = false;			
